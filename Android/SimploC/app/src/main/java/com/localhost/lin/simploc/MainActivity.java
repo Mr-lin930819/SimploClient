@@ -12,6 +12,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.webkit.WebView;
+import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -42,6 +44,14 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        final Button loginButton = (Button) findViewById(R.id.btn_login);
+        loginButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                loginButton.setText("Hello");
+            }
+        });
     }
 
     @Override
@@ -91,13 +101,22 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_manage) {
 
         } else if (id == R.id.nav_share) {
+            RelativeLayout layout = (RelativeLayout)findViewById(R.id.main_page);
+            layout.removeAllViews();
+            RelativeLayout resultView = (RelativeLayout) getLayoutInflater().inflate(
+                    R.layout.content_main, null).findViewById(R.id.main_content);
+            layout.addView(resultView);
 
         } else if (id == R.id.nav_send) {
             RelativeLayout layout = (RelativeLayout)findViewById(R.id.main_page);
             layout.removeAllViews();
-            RelativeLayout textView = (RelativeLayout) getLayoutInflater().inflate(
-                    R.layout.activity_result_page, null).findViewById(R.id.textTT);
-            layout.addView(textView);
+            View view = getLayoutInflater().inflate(R.layout.activity_result_page, null);
+
+            RelativeLayout resultView =(RelativeLayout)view.findViewById(R.id.result_view);
+            WebView resultWebview = (WebView) view.findViewById(R.id.result_web_view);
+            resultWebview.getSettings().setJavaScriptEnabled(true);
+            resultWebview.loadUrl("file:///android_asset/result_page.html");
+            layout.addView(resultView);
 
         }
 
