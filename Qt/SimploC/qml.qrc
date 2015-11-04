@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>MainForm.ui.qml</file>
+        <file>QChart.js</file>
+        <file>QChart.qml</file>
+        <file>QChartGallery.js</file>
+        <file>TestQChart.qml</file>
+        <file>GradeShowForm.qml</file>
+        <file>qmldir</file>
+        <file>MyButton.qml</file>
+        <file>LoginPage.qml</file>
+    </qresource>
+</RCC>
