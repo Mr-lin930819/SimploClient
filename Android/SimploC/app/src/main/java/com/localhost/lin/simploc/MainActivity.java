@@ -1,6 +1,9 @@
 package com.localhost.lin.simploc;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.view.View;
@@ -14,11 +17,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.webkit.WebView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    NetworkThreads threads = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +58,8 @@ public class MainActivity extends AppCompatActivity
                 loginButton.setText("Hello");
             }
         });
+
+        threads = new NetworkThreads(handler);
     }
 
     @Override
@@ -95,7 +103,8 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.nav_camara) {
             // Handle the camera action
         } else if (id == R.id.nav_gallery) {
-
+            Thread loginThread = new Thread(threads.new RecvLoginPageThread());
+            loginThread.start();
         } else if (id == R.id.nav_slideshow) {
 
         } else if (id == R.id.nav_manage) {
@@ -124,4 +133,21 @@ public class MainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+    /**
+     * 用于处理消息
+     */
+    private Handler handler = new Handler(Looper.myLooper()){
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            if(((String)msg.obj).equalsIgnoreCase("loginPageLoaded")){
+                Bundle bundle = msg.getData();
+                EditText et1 = (EditText)findViewById(R.id.stu_num_edit);
+                EditText et2 = (EditText)findViewById(R.id.stu_passwd_edit);
+                et1.setText(bundle.getString("viewState"));
+                et2.setText(bundle.getString("cookie"));
+            }
+        }
+    };
 }

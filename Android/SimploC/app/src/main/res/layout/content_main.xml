@@ -17,6 +17,7 @@
         android:textSize="30dp"
         android:textAlignment="center"/>
     <EditText
+        android:id="@+id/stu_num_edit"
         android:layout_width="300dp"
         android:layout_height="45dp"
         android:layout_toRightOf="@id/stu_num_text"/>
@@ -31,6 +32,7 @@
         android:textSize="30dp"
         android:textAlignment="center"/>
     <EditText
+        android:id="@+id/stu_passwd_edit"
         android:layout_alignTop="@id/stu_passwd_text"
         android:layout_width="300dp"
         android:layout_height="45dp"
