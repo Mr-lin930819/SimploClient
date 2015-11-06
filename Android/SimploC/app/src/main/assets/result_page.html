@@ -3,59 +3,54 @@
 <head>
 	<title>Bar Chart</title>
     <script src="Chart.js"></script>
-    <script language="javascript">
-        function setData(jsonData){
-            var result = eval(jsonData);
-            gradeList = jsonData.GRADE;
-        }
-    </script>
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 </head>
 <body style=" height: 100%;width: 100%;margin: 0;padding: 0;display: block;">
 	<canvas id="canvas" style="height: 100%;width: 100%;margin: 0;padding: 0;display: block;" height="400"></canvas>
 
 <script>
-    var labelData =  ["2","3","4","5"];
-    var dataData =  [4,3,2,1];
-
-    var gradeList;
+    var gradeList = init();
 
     function init(){
-         var result = eval( jsObject.getGradeJson().toLocaleString());
-         gradeList = jsonData.GRADE;
+         var result = eval('('+jsObject.getJsonTest().toLocaleString()+')');
+         return result.Main;
      }
 
-    var labelList = function(){
-        var list = new Array();
-        for(var key in gradeList){
-            list.push(key);
+
+    function func1(list){
+        ret = new Array();
+        for(var key in list){
+            ret.push(key);
         }
-        return list;
+        return ret;
     }
 
-    var dataList = function(){
-        var list = new Array();
-        for(var key in gradeList){
-            list.push(parseInt(gradeList[key]));
+   function func2(list){
+        ret = new Array();
+        for(var key in list){
+            ret.push(parseFloat(list[key]));
         }
-        return list;
+        return ret;
     }
+
+    var labels = func1(gradeList);
+    var datas = func2(gradeList);
+
      var barChartData = {
-        labels : labelList,
+        labels : labels,
         datasets : [
             {
                 fillColor : "rgba(151,187,205,0.5)",
                 strokeColor : "rgba(151,187,205,0.8)",
                 highlightFill : "rgba(151,187,205,0.75)",
                 highlightStroke : "rgba(151,187,205,1)",
-                data : dataList
+                data : datas
             }
         ]
 
     }
 
 	window.onload = function(){
-	    init();
 		var ctx = document.getElementById("canvas").getContext("2d");
 		window.myBar = new Chart(ctx).Bar(barChartData, {
 			responsive : true

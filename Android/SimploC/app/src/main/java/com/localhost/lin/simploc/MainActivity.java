@@ -1,5 +1,6 @@
 package com.localhost.lin.simploc;
 
+import android.app.Application;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -126,7 +127,20 @@ public class MainActivity extends AppCompatActivity
             Thread loginThread = new Thread(threads.new RecvLoginPageThread());
             loginThread.start();
         } else if (id == R.id.nav_slideshow) {
+            RelativeLayout layout = (RelativeLayout) findViewById(R.id.main_page);
+            layout.removeAllViews();
+            View view = getLayoutInflater().inflate(R.layout.activity_result_page, null);
 
+            RelativeLayout resultView = (RelativeLayout) view.findViewById(R.id.result_view);
+            WebView resultWebview = (WebView) view.findViewById(R.id.result_web_view);
+
+            resultWebview.setWebChromeClient(new MyWebChromeClient());
+            resultWebview.getSettings().setJavaScriptEnabled(true);
+            resultWebview.addJavascriptInterface(new JsObject(), "jsObject");
+
+            resultWebview.loadUrl("file:///android_asset/result_page.html");
+            //resultWebview.loadUrl("javascript:setData("+resultJson+")");
+            layout.addView(resultView);
         } else if (id == R.id.nav_manage) {
             new Thread(threads.new QueryGradeThread("2014-2015", "")).start();
 
@@ -205,7 +219,16 @@ public class MainActivity extends AppCompatActivity
     public class JsObject {
         @JavascriptInterface
         public String getGradeJson() {
-            return "'"+resultJson+"'";
+            return "'（"+resultJson+"）'";
+        }
+
+        @JavascriptInterface
+        public String getJsonTest(){
+            String ret = "";
+//            ret += "'";
+            ret += TestUnit.jsMethodTest();
+//            ret += "'";
+            return ret;
         }
     }
 

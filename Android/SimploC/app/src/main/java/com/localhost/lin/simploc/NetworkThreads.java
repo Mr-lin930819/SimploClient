@@ -29,7 +29,8 @@ import java.util.Map;
  * Created by Lin on 2015/11/5.
  */
 public class NetworkThreads {
-    final String HOST_URL           = "http://172.20.27.41:8080/SimploServer";
+    //final String HOST_URL           = "http://172.20.27.41:8080/SimploServer";
+    final String HOST_URL           = "http://192.168.1.102:8080/SimploServer";
     final String LOGIN_URL          = HOST_URL + "/LoginPageServlet";
     final String TRY_LOGIN_URL     = HOST_URL + "/TryLoginServlet";
     final String C_IMG_URL          = HOST_URL + "/CheckImgServlet";
