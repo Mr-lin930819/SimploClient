@@ -48,6 +48,7 @@
         android:textSize="30dp"
         android:textAlignment="center"/>
     <EditText
+        android:id="@+id/code_edit"
         android:layout_alignTop="@id/code_text"
         android:layout_width="300dp"
         android:layout_height="45dp"

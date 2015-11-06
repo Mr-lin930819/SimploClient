@@ -26,6 +26,8 @@ android {
         exclude 'META-INF/NOTICE.txt'
         exclude 'META-INF/DEPENDENCIES.txt'
     }
+
+    useLibrary 'org.apache.http.legacy'
 }
 
 dependencies {
@@ -34,5 +36,7 @@ dependencies {
     compile 'com.android.support:appcompat-v7:23.1.0'
     compile 'com.android.support:design:23.1.0'
     compile files('libs/httpclient-4.5.1.jar')
-    compile group: 'org.apache.httpcomponents' , name: 'httpclient-android' , version: '4.3.5.1'
+    compile 'org.apache.httpcomponents:httpclient-android:4.3.5.1'
+    compile files('libs/httpclient-android-4.3.5.1.jar')
+    compile files('libs/httpcore-4.4.3.jar')
 }
