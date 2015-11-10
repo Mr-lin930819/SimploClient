@@ -3,13 +3,14 @@
 <head>
 	<title>Bar Chart</title>
     <script src="Chart.js"></script>
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="viewport" id="main_view" content="width=device-width , initial-scale=1.0 , user-scalable=yes"/>
 </head>
-<body style=" height: 100%;width: 100%;margin: 0;padding: 0;display: block;">
-	<canvas id="canvas" style="height: 100%;width: 100%;margin: 0;padding: 0;display: block;" height="500"></canvas>
+<body style=" height: 100%;width: 100%;margin: 0;padding: 0;">
+	<canvas id="canvas" style="height: 100%;width: 100%;margin: 0;padding: 0;display: block;"></canvas>
 
 <script>
     var gradeList = init();
+    var viewport = document.getElementById("main_view");
 
     function init(){
          var result = eval('('+jsObject.getGradeJson().toLocaleString()+')');
@@ -37,6 +38,7 @@
     var labels = func1(gradeList);
     var datas = func2(gradeList);
 
+
      var barChartData = {
         labels : labels,
         datasets : [
@@ -53,6 +55,13 @@
 
 	window.onload = function(){
 		var ctx = document.getElementById("canvas").getContext("2d");
+		alert(datas.length)
+		//动态改变图表宽度
+		var num = datas.length * 20
+		viewport.content = "width=" + num + "px , initial-scale=1.0 , user-scalable=yes";
+		if(num < 300)
+		    viewport.content = "width=device-width , initial-scale=1.0 , user-scalable=yes";
+
 		window.myBar = new Chart(ctx).Bar(barChartData, {
 			responsive : true
 		});

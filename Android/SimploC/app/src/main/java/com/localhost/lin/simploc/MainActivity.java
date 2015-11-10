@@ -85,13 +85,8 @@ public class MainActivity extends AppCompatActivity
         resultWebview.setWebChromeClient(new MyWebChromeClient());
         resultWebview.getSettings().setJavaScriptEnabled(true);
         resultWebview.getSettings().setSupportZoom(true);
-        // 设置出现缩放工具
-        resultWebview.getSettings().setBuiltInZoomControls(true);
         //扩大比例的缩放
         resultWebview.getSettings().setUseWideViewPort(true);
-        //自适应屏幕
-        resultWebview.getSettings().setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
-        resultWebview.getSettings().setLoadWithOverviewMode(true);
         resultWebview.addJavascriptInterface(new JsObject(), "jsObject");
         resultWebview.loadUrl("file:///android_asset/welcome_page.html");
     }
