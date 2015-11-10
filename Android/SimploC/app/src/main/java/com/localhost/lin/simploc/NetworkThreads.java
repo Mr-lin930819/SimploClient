@@ -30,11 +30,12 @@ import java.util.Map;
  */
 public class NetworkThreads {
     //final String HOST_URL           = "http://172.20.27.41:8080/SimploServer";
-    final String HOST_URL           = "http://192.168.1.102:8080/SimploServer";
-    final String LOGIN_URL          = HOST_URL + "/LoginPageServlet";
-    final String TRY_LOGIN_URL     = HOST_URL + "/TryLoginServlet";
-    final String C_IMG_URL          = HOST_URL + "/CheckImgServlet";
-    final String QUERY_URL          = HOST_URL + "/QueryGradeServlet";
+    //final String HOST_URL           = "http://192.168.1.102:8080/SimploServer";
+    public static final String HOST_URL           = "http://www.pockitcampus.com/SimploServer/";
+    public static final String LOGIN_URL          = HOST_URL + "/LoginPageServlet";
+    public static final String TRY_LOGIN_URL     = HOST_URL + "/TryLoginServlet";
+    public static final String C_IMG_URL          = HOST_URL + "/CheckImgServlet";
+    public static final String QUERY_URL          = HOST_URL + "/QueryGradeServlet";
 
     final class LoginInfo{
         public String number;
@@ -43,12 +44,13 @@ public class NetworkThreads {
         public String viewState;
         public String cookie;
     };
-    private LoginInfo loginInfo;
+    public static LoginInfo loginInfo = null;
     private Handler mHandler;
-
     NetworkThreads(Handler handler){
         mHandler = handler;
-        loginInfo = new LoginInfo();
+        if (loginInfo == null) {
+            loginInfo = new LoginInfo();
+        }
     }
 
     public void setHandler(Handler mHandler) {
@@ -107,6 +109,8 @@ public class NetworkThreads {
             Bundle loginBundle = new Bundle();
 //            loginBundle.putString("viewState",tmpData.get("viewState"));
 //            loginBundle.putString("cookie", tmpData.get("cookie"));
+            loginBundle.putString("viewState",tmpData.get("viewState"));
+            loginBundle.putString("cookie",tmpData.get("cookie"));
             loginBundle.putByteArray("checkImg",checkImg);
 
             Message msg = mHandler.obtainMessage();
@@ -162,10 +166,10 @@ public class NetworkThreads {
             HttpGetHC4 gradeQueryGetRequest = new HttpGetHC4(QUERY_URL + "?number=" + loginInfo.number +
                                             "&cookie=" + loginInfo.cookie + "&xn=" + xnStr +"&xq" + xqStr);
             String result = null;
-            HashMap<String,String> gradeList = new HashMap<String,String>();
+            //HashMap<String,String> gradeList = new HashMap<String,String>();
             try {
-                result = EntityUtilsHC4.toString(netManager.execute(gradeQueryGetRequest).getEntity());
-                gradeList = convJson2Map(result,"GRADE");
+                result = EntityUtilsHC4.toString(netManager.execute(gradeQueryGetRequest).getEntity(), "gb2312");
+                //gradeList = convJson2Map(result,"GRADE");
             } catch (IOException e) {
                 e.printStackTrace();
             }

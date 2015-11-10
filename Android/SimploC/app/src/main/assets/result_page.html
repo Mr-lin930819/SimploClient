@@ -6,19 +6,19 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 </head>
 <body style=" height: 100%;width: 100%;margin: 0;padding: 0;display: block;">
-	<canvas id="canvas" style="height: 100%;width: 100%;margin: 0;padding: 0;display: block;" height="400"></canvas>
+	<canvas id="canvas" style="height: 100%;width: 100%;margin: 0;padding: 0;display: block;" height="500"></canvas>
 
 <script>
     var gradeList = init();
 
     function init(){
-         var result = eval('('+jsObject.getJsonTest().toLocaleString()+')');
-         return result.Main;
+         var result = eval('('+jsObject.getGradeJson().toLocaleString()+')');
+         return result.GRADE;
      }
 
 
     function func1(list){
-        ret = new Array();
+        var ret = new Array();
         for(var key in list){
             ret.push(key);
         }
@@ -26,9 +26,10 @@
     }
 
    function func2(list){
-        ret = new Array();
+        var ret = new Array();
         for(var key in list){
             ret.push(parseFloat(list[key]));
+//            alert(list[key])
         }
         return ret;
     }

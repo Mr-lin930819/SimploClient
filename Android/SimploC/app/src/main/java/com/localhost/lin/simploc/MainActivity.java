@@ -22,6 +22,7 @@ import android.view.MenuItem;
 import android.webkit.JavascriptInterface;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -38,6 +39,7 @@ public class MainActivity extends AppCompatActivity
 
     NetworkThreads threads = null;
     private String resultJson;
+    WebView resultWebview;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,23 +66,34 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        final Button loginButton = (Button) findViewById(R.id.btn_login);
+ //       final Button loginButton = (Button) findViewById(R.id.btn_login);
         threads = new NetworkThreads(handler);
-        final EditText nameET = (EditText) findViewById(R.id.stu_num_edit);
-        final EditText passET = (EditText) findViewById(R.id.stu_passwd_edit);
-        final EditText checkET = (EditText) findViewById(R.id.code_edit);
-
-
-        loginButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                new Thread(threads.new TryLoginThread(nameET.getText().toString(), passET.getText().toString()
-                        , checkET.getText().toString())).start();
-                loginButton.setClickable(false);
-            }
-        });
-
-
+//        final EditText nameET = (EditText) findViewById(R.id.stu_num_edit);
+//        final EditText passET = (EditText) findViewById(R.id.stu_passwd_edit);
+//        final EditText checkET = (EditText) findViewById(R.id.code_edit);
+//
+//
+//        loginButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                new Thread(threads.new TryLoginThread(nameET.getText().toString(), passET.getText().toString()
+//                        , checkET.getText().toString())).start();
+//                loginButton.setClickable(false);
+//            }
+//        });
+        resultWebview = (WebView) findViewById(R.id.result_web_view);
+        resultWebview.setWebChromeClient(new MyWebChromeClient());
+        resultWebview.getSettings().setJavaScriptEnabled(true);
+        resultWebview.getSettings().setSupportZoom(true);
+        // 设置出现缩放工具
+        resultWebview.getSettings().setBuiltInZoomControls(true);
+        //扩大比例的缩放
+        resultWebview.getSettings().setUseWideViewPort(true);
+        //自适应屏幕
+        resultWebview.getSettings().setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
+        resultWebview.getSettings().setLoadWithOverviewMode(true);
+        resultWebview.addJavascriptInterface(new JsObject(), "jsObject");
+        resultWebview.loadUrl("file:///android_asset/welcome_page.html");
     }
 
     @Override
@@ -123,45 +136,34 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.nav_camara) {
             // Handle the camera action
+            resultWebview.loadUrl("file:///android_asset/wait_page.html");
+            new Thread(threads.new QueryGradeThread("2012-2013", "")).start();
         } else if (id == R.id.nav_gallery) {
-            Thread loginThread = new Thread(threads.new RecvLoginPageThread());
-            loginThread.start();
+            resultWebview.loadUrl("file:///android_asset/wait_page.html");
+            new Thread(threads.new QueryGradeThread("2013-2014", "")).start();
         } else if (id == R.id.nav_slideshow) {
-            RelativeLayout layout = (RelativeLayout) findViewById(R.id.main_page);
-            layout.removeAllViews();
-            View view = getLayoutInflater().inflate(R.layout.activity_result_page, null);
-
-            RelativeLayout resultView = (RelativeLayout) view.findViewById(R.id.result_view);
-            WebView resultWebview = (WebView) view.findViewById(R.id.result_web_view);
-
-            resultWebview.setWebChromeClient(new MyWebChromeClient());
-            resultWebview.getSettings().setJavaScriptEnabled(true);
-            resultWebview.addJavascriptInterface(new JsObject(), "jsObject");
+            resultWebview.loadUrl("file:///android_asset/wait_page.html");
+            new Thread(threads.new QueryGradeThread("2014-2015", "")).start();
+        } else if (id == R.id.nav_manage) {
+//            RelativeLayout layout = (RelativeLayout) findViewById(R.id.main_page);
+//            layout.removeAllViews();
+//            View view = getLayoutInflater().inflate(R.layout.activity_result_page, null);
+//
+//            RelativeLayout resultView = (RelativeLayout) view.findViewById(R.id.result_view);
+//            WebView resultWebview = (WebView) findViewById(R.id.result_web_view);
+//
+//            resultWebview.setWebChromeClient(new MyWebChromeClient());
+//            resultWebview.getSettings().setJavaScriptEnabled(true);
+//            resultWebview.addJavascriptInterface(new JsObject(), "jsObject");
 
             resultWebview.loadUrl("file:///android_asset/result_page.html");
             //resultWebview.loadUrl("javascript:setData("+resultJson+")");
-            layout.addView(resultView);
-        } else if (id == R.id.nav_manage) {
-            new Thread(threads.new QueryGradeThread("2014-2015", "")).start();
+//            layout.addView(resultView);
 
         } else if (id == R.id.nav_share) {
-            RelativeLayout layout = (RelativeLayout) findViewById(R.id.main_page);
-            layout.removeAllViews();
-            RelativeLayout resultView = (RelativeLayout) getLayoutInflater().inflate(
-                    R.layout.content_main, null).findViewById(R.id.main_content);
-            layout.addView(resultView);
-
+            resultWebview.loadUrl("file:///android_asset/wait_page.html");
         } else if (id == R.id.nav_send) {
-            RelativeLayout layout = (RelativeLayout) findViewById(R.id.main_page);
-            layout.removeAllViews();
-            View view = getLayoutInflater().inflate(R.layout.activity_result_page, null);
-
-            RelativeLayout resultView = (RelativeLayout) view.findViewById(R.id.result_view);
-            WebView resultWebview = (WebView) view.findViewById(R.id.result_web_view);
-            resultWebview.getSettings().setJavaScriptEnabled(true);
             resultWebview.loadUrl("file:///android_asset/result_page.html");
-            layout.addView(resultView);
-
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -176,50 +178,55 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            //载入验证码图片
-            if (((String) msg.obj).equalsIgnoreCase("loginPageLoaded")) {
-                Bundle bundle = msg.getData();
-                ImageView iv = (ImageView) findViewById(R.id.code_img);
-                byte[] imgRes = bundle.getByteArray("checkImg");
-                if (imgRes != null) {
-                    Bitmap bitmap = BitmapFactory.decodeByteArray(imgRes, 0, imgRes.length);
-                    iv.setImageBitmap(bitmap);
-                }
-            } else if (((String) msg.obj).equalsIgnoreCase("tryLoginEnd")) {
-                Button btn = (Button) findViewById(R.id.btn_login);
-                btn.setClickable(true);
-
-                Bundle bundle = msg.getData();
-                btn.setText(bundle.getString("canLogin"));
-
-            } else if (((String) msg.obj).equalsIgnoreCase("queryGradeFinished")) {
+//            //载入验证码图片
+//            if (((String) msg.obj).equalsIgnoreCase("loginPageLoaded")) {
+//                Bundle bundle = msg.getData();
+//                ImageView iv = (ImageView) findViewById(R.id.code_img);
+//                byte[] imgRes = bundle.getByteArray("checkImg");
+//                if (imgRes != null) {
+//                    Bitmap bitmap = BitmapFactory.decodeByteArray(imgRes, 0, imgRes.length);
+//                    iv.setImageBitmap(bitmap);
+//                }
+//            } else if (((String) msg.obj).equalsIgnoreCase("tryLoginEnd")) {
+//                Button btn = (Button) findViewById(R.id.btn_login);
+//                btn.setClickable(true);
+//
+//                Bundle bundle = msg.getData();
+//                btn.setText(bundle.getString("canLogin"));
+//
+//            } else if (((String) msg.obj).equalsIgnoreCase("queryGradeFinished")) {
+            if (((String) msg.obj).equalsIgnoreCase("queryGradeFinished")) {
 //                Bundle bundle = msg.getData();
 //                for(String key:bundle.keySet()){
 //
 //                }
-                RelativeLayout layout = (RelativeLayout) findViewById(R.id.main_page);
-                layout.removeAllViews();
-                View view = getLayoutInflater().inflate(R.layout.activity_result_page, null);
+//                RelativeLayout layout = (RelativeLayout) findViewById(R.id.main_page);
+//                layout.removeAllViews();
+//                View view = getLayoutInflater().inflate(R.layout.activity_result_page, null);
 
-                RelativeLayout resultView = (RelativeLayout) view.findViewById(R.id.result_view);
-                WebView resultWebview = (WebView) view.findViewById(R.id.result_web_view);
+//                RelativeLayout resultView = (RelativeLayout) view.findViewById(R.id.result_view);
+                WebView resultWebview = (WebView) findViewById(R.id.result_web_view);
 
                 resultJson = msg.getData().getString("json");
+                Log.d("LLAALLAA",resultJson);
                 resultWebview.setWebChromeClient(new MyWebChromeClient());
                 resultWebview.getSettings().setJavaScriptEnabled(true);
                 resultWebview.addJavascriptInterface(new JsObject(), "jsObject");
 
                 resultWebview.loadUrl("file:///android_asset/result_page.html");
                 //resultWebview.loadUrl("javascript:setData("+resultJson+")");
-                layout.addView(resultView);
+//                layout.addView(resultView);
             }
         }
     };
 
+    /**
+     * 用于与JS交互的接口对象
+     */
     public class JsObject {
         @JavascriptInterface
         public String getGradeJson() {
-            return "'（"+resultJson+"）'";
+            return resultJson;
         }
 
         @JavascriptInterface
@@ -232,11 +239,10 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-
     final class MyWebChromeClient extends WebChromeClient {
         @Override
         public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
-            Log.d("NNNNNN", message);
+            Log.d("Web Console------>", message);
             result.confirm();
             return true;
         }

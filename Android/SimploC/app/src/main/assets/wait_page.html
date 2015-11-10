@@ -1,0 +1,50 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<title>Bar Chart</title>
+    <script src="spin.min.js"></script>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+	<style type="text/css">
+		.first{
+			position:absolute;
+		    top:50%;
+		    left:50%;
+		    width:0px;
+		    height:0px;
+		}
+		
+	</style>
+
+</head>
+<body style=" height: 100%;width: 100%;margin: 0;padding: 0;display: block;">
+
+	<div class="first" id="my">
+    </div>
+
+<script>
+	var opts = {
+		lines: 13, // 花瓣数目
+		length: 20, // 花瓣长度
+		width: 10, // 花瓣宽度
+		radius: 30, // 花瓣距中心半径
+		corners: 1, // 花瓣圆滑度 (0-1)
+		rotate: 0, // 花瓣旋转角度
+		direction: 1, // 花瓣旋转方向 1: 顺时针, -1: 逆时针
+		color: '#5882FA', // 花瓣颜色
+		speed: 1, // 花瓣旋转速度
+		trail: 60, // 花瓣旋转时的拖影(百分比)
+		shadow: false, // 花瓣是否显示阴影
+		hwaccel: false, //spinner 是否启用硬件加速及高速旋转
+		className: 'spinner', // spinner css 样式名称
+		zIndex: 2e9, // spinner的z轴 (默认是2000000000)
+		top: 'auto', // spinner 相对父容器Top定位 单位 px
+		left: 'auto'// spinner 相对父容器Left定位 单位 px
+	};
+	//var target = $("#firstDiv").get(0);
+	var target = document.getElementById('my');
+	var spinner = new Spinner(opts).spin(target);
+
+</script>
+</body>
+</html>

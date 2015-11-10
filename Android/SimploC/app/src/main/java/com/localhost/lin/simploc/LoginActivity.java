@@ -5,6 +5,11 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -28,10 +33,18 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.apache.http.client.methods.HttpGetHC4;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtilsHC4;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
@@ -62,6 +75,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
+    private EditText mCheckCodeView;
+
+    private String loginViewState,loginCookie;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +98,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 return false;
             }
         });
+        mCheckCodeView = (EditText)findViewById(R.id.check_code);
 
         Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
@@ -90,6 +107,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 attemptLogin();
             }
         });
+
+        /**启动后台线程获取登录验证码*/
+        NetworkThreads threads = new NetworkThreads(handler);
+        Thread loginThread = new Thread(threads.new RecvLoginPageThread());
+        loginThread.start();
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
@@ -156,6 +178,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         // Store values at the time of the login attempt.
         String email = mEmailView.getText().toString();
         String password = mPasswordView.getText().toString();
+        String checkCode = mCheckCodeView.getText().toString();
 
         boolean cancel = false;
         View focusView = null;
@@ -172,7 +195,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             mEmailView.setError(getString(R.string.error_field_required));
             focusView = mEmailView;
             cancel = true;
-        } else if (!isEmailValid(email)) {
+        } else if (!isNumberValid(email)) {
             mEmailView.setError(getString(R.string.error_invalid_email));
             focusView = mEmailView;
             cancel = true;
@@ -186,14 +209,14 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            mAuthTask = new UserLoginTask(email, password);
+            mAuthTask = new UserLoginTask(email, password,checkCode);
             mAuthTask.execute((Void) null);
         }
     }
 
-    private boolean isEmailValid(String email) {
+    private boolean isNumberValid(String number) {
         //TODO: Replace this with your own logic
-        return email.contains("@");
+        return (number.length() == 12 && Pattern.compile("[0-9]*").matcher(number).matches());
     }
 
     private boolean isPasswordValid(String password) {
@@ -291,6 +314,24 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mEmailView.setAdapter(adapter);
     }
 
+    private Handler handler = new Handler(Looper.myLooper()){
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            if (((String) msg.obj).equalsIgnoreCase("loginPageLoaded")) {
+                Bundle bundle = msg.getData();
+                ImageView iv = (ImageView) findViewById(R.id.check_code_img);
+                loginViewState = bundle.getString("viewState");
+                loginCookie = bundle.getString("cookie");
+                byte[] imgRes = bundle.getByteArray("checkImg");
+                if (imgRes != null) {
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(imgRes, 0, imgRes.length);
+                    iv.setImageBitmap(bitmap);
+                }
+            }
+        }
+    };
+
     /**
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
@@ -299,22 +340,42 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         private final String mEmail;
         private final String mPassword;
+        private final String mCheckCode;
 
-        UserLoginTask(String email, String password) {
+        UserLoginTask(String email, String password,String checkCode) {
             mEmail = email;
             mPassword = password;
+            mCheckCode = checkCode;
         }
 
         @Override
         protected Boolean doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
 
+            String result = null;
+            CloseableHttpClient netManager = HttpClients.createDefault();
+            HttpGetHC4 tryLoginGetRequest = new HttpGetHC4(NetworkThreads.TRY_LOGIN_URL + "?number=" + mEmail +
+                    "&password=" + mPassword + "&checkCode="
+                    + mCheckCode + "&viewState=" + loginViewState
+                    + "&cookie=" + loginCookie);
+            NetworkThreads.loginInfo.checkCode = mCheckCode;
+            NetworkThreads.loginInfo.number = mEmail;
+            NetworkThreads.loginInfo.password = mPassword;
             try {
-                // Simulate network access.
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
+                result = EntityUtilsHC4.toString(netManager.execute(tryLoginGetRequest).getEntity());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if(result.equals("0")){
                 return false;
             }
+
+//            try {
+//                // Simulate network access.
+//                Thread.sleep(2000);
+//            } catch (InterruptedException e) {
+//                return false;
+//            }
 
             for (String credential : DUMMY_CREDENTIALS) {
                 String[] pieces = credential.split(":");
@@ -331,7 +392,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         @Override
         protected void onPostExecute(final Boolean success) {
             mAuthTask = null;
-            showProgress(false);
 
             if (success) {
                 Intent intent = new Intent();
@@ -339,6 +399,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 startActivity(intent);
                 finish();
             } else {
+                showProgress(false);
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
                 mPasswordView.requestFocus();
             }
