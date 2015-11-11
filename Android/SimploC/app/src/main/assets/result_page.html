@@ -2,15 +2,17 @@
 <html>
 <head>
 	<title>Bar Chart</title>
-    <script src="Chart.js"></script>
+    <script src="js/Chart.js"></script>
+    <!--<script src="js/jscharts.js"></script>-->
 	<meta name="viewport" id="main_view" content="width=device-width , initial-scale=1.0 , user-scalable=yes"/>
 </head>
 <body style=" height: 100%;width: 100%;margin: 0;padding: 0;">
-	<canvas id="canvas" style="height: 100%;width: 100%;margin: 0;padding: 0;display: block;"></canvas>
+	<canvas id="canvas" style="height: 100%;width: 100%;margin: 0;padding: 0;display: block;" height="480px"></canvas>
 
 <script>
     var gradeList = init();
     var viewport = document.getElementById("main_view");
+    var html5canvas = document.getElementById("canvas");
 
     function init(){
          var result = eval('('+jsObject.getGradeJson().toLocaleString()+')');
@@ -58,12 +60,15 @@
 		alert(datas.length)
 		//动态改变图表宽度
 		var num = datas.length * 20
-		viewport.content = "width=" + num + "px , initial-scale=1.0 , user-scalable=yes";
-		if(num < 300)
-		    viewport.content = "width=device-width , initial-scale=1.0 , user-scalable=yes";
+        //html5canvas.style = "height: 100%;width: 150%;margin: 0;padding: 0;display: block;"
+		//viewport.content = "width=" + num + "px , initial-scale=1.0 , user-scalable=yes";
+		if(num > 300){
+		    viewport.content = "width=" + num + " , height=200 , initial-scale=1.0 , user-scalable=yes";
+		    html5canvas.height="320";
+		}
 
 		window.myBar = new Chart(ctx).Bar(barChartData, {
-			responsive : true
+			responsive : false
 		});
 	}
 

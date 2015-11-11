@@ -1,6 +1,7 @@
 package com.localhost.lin.simploc;
 
 import android.app.Application;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -28,11 +29,14 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TabHost;
 import android.widget.TextView;
 
 import android.net.Uri;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
+import java.util.zip.Inflater;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -81,6 +85,12 @@ public class MainActivity extends AppCompatActivity
 //                loginButton.setClickable(false);
 //            }
 //        });
+
+        TabHost tabHost = (TabHost)findViewById(R.id.tabHost);
+        tabHost.setup();
+        tabHost.addTab(tabHost.newTabSpec("tab1").setIndicator("柱状图显示").setContent(R.id.chartLayout));
+        tabHost.addTab(tabHost.newTabSpec("tab2").setIndicator("表格显示").setContent(R.id.tabelLayout));
+
         resultWebview = (WebView) findViewById(R.id.result_web_view);
         resultWebview.setWebChromeClient(new MyWebChromeClient());
         resultWebview.getSettings().setJavaScriptEnabled(true);
@@ -89,6 +99,15 @@ public class MainActivity extends AppCompatActivity
         resultWebview.getSettings().setUseWideViewPort(true);
         resultWebview.addJavascriptInterface(new JsObject(), "jsObject");
         resultWebview.loadUrl("file:///android_asset/welcome_page.html");
+
+        //View navHeader = View.inflate(navigationView.getContext(),R.layout.nav_header_main,null);
+        View navHeader = navigationView.inflateHeaderView(R.layout.nav_header_main);
+        TextView nameText = (TextView)navHeader.findViewById(R.id.navbar_name_text);
+        TextView numberText = (TextView)navHeader.findViewById(R.id.nav_number_text);
+        //TextView nameText = (TextView)(navigationView.inflateHeaderView(R.layout.nav_header_main)).findViewById(R.id.navbar_name_text);
+        //TextView nameText = (TextView)navHeader.findViewById(R.id.navbar_name_text);
+        nameText.setText(NetworkThreads.loginInfo.xm);
+        numberText.setText(NetworkThreads.loginInfo.number);
     }
 
     @Override
@@ -118,6 +137,8 @@ public class MainActivity extends AppCompatActivity
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
+        }else if (id == R.id.action_exit) {
+            android.os.Process.killProcess(android.os.Process.myPid());
         }
 
         return super.onOptionsItemSelected(item);
@@ -158,7 +179,11 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_share) {
             resultWebview.loadUrl("file:///android_asset/wait_page.html");
         } else if (id == R.id.nav_send) {
-            resultWebview.loadUrl("file:///android_asset/result_page.html");
+            Intent intent = new Intent();
+            intent.setClass(MainActivity.this,LoginActivity.class);
+            startActivity(intent);
+            finish();
+            //resultWebview.loadUrl("file:///android_asset/result_page.html");
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

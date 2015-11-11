@@ -72,12 +72,49 @@
         <!--android:background="@color/colorLoginButton"-->
         <!--android:id="@+id/btn_login"/>-->
 
-    <WebView
-        android:id="@+id/result_web_view"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent">
 
-    </WebView>
+    <TabHost
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/tabHost"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
+            <TabWidget
+                android:id="@android:id/tabs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"></TabWidget>
+
+            <FrameLayout
+                android:id="@android:id/tabcontent"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:id="@+id/chartLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+                    <WebView
+                        android:id="@+id/result_web_view"
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent">
+
+                    </WebView>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/tabelLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"></LinearLayout>
+            </FrameLayout>
+        </LinearLayout>
+    </TabHost>
 </RelativeLayout>

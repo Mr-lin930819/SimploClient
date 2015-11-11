@@ -29,8 +29,8 @@ import java.util.Map;
  * Created by Lin on 2015/11/5.
  */
 public class NetworkThreads {
-    //final String HOST_URL           = "http://172.20.27.41:8080/SimploServer";
-    //final String HOST_URL           = "http://192.168.1.102:8080/SimploServer";
+    //public static final String HOST_URL           = "http://172.20.27.41:8080/SimploServer";
+    //public static final String HOST_URL           = "http://192.168.1.102:8080/SimploServer";
     public static final String HOST_URL           = "http://www.pockitcampus.com/SimploServer/";
     public static final String LOGIN_URL          = HOST_URL + "/LoginPageServlet";
     public static final String TRY_LOGIN_URL     = HOST_URL + "/TryLoginServlet";
@@ -43,6 +43,7 @@ public class NetworkThreads {
         public String checkCode;
         public String viewState;
         public String cookie;
+        public String xm;
     };
     public static LoginInfo loginInfo = null;
     private Handler mHandler;
@@ -70,7 +71,8 @@ public class NetworkThreads {
                 data.put(key,jsonArr.getString(key));
             }
         } catch (JSONException e) {
-            e.printStackTrace();
+            return null;
+//            e.printStackTrace();
         }
         return data;
     }
@@ -85,11 +87,26 @@ public class NetworkThreads {
             byte[] checkImg = null;
             HashMap<String,String> tmpData = null;
 
+            Bundle loginBundle = new Bundle();
+            Message msg = mHandler.obtainMessage();
+
             /*先获取Cookie和ViewState*/
             try {
                 loginPage   = EntityUtilsHC4.toString(netManager.execute(loginGetRequest).getEntity());
                 //获得单次查询会话的Cookie和ViewState,保存。
                 tmpData = convJson2Map(loginPage, "loginPage");
+                if(tmpData == null){
+                    msg.obj = "runError";
+                    loginBundle.putString("info", "LoginPage");
+                    msg.setData(loginBundle);
+                    try {
+                        Thread.currentThread().sleep(2500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    mHandler.sendMessage(msg);
+                    return;
+                }
 
                 //根据之前的Cookie获取验证码图片
                 HttpGetHC4 checkImgGetRequest = new HttpGetHC4(C_IMG_URL + "?cookie=" + tmpData.get("cookie"));
@@ -106,14 +123,12 @@ public class NetworkThreads {
 
             loginInfo.viewState = tmpData.get("viewState");
             loginInfo.cookie    = tmpData.get("cookie");
-            Bundle loginBundle = new Bundle();
 //            loginBundle.putString("viewState",tmpData.get("viewState"));
 //            loginBundle.putString("cookie", tmpData.get("cookie"));
             loginBundle.putString("viewState",tmpData.get("viewState"));
             loginBundle.putString("cookie",tmpData.get("cookie"));
             loginBundle.putByteArray("checkImg",checkImg);
 
-            Message msg = mHandler.obtainMessage();
             msg.setData(loginBundle);
             msg.obj = "loginPageLoaded";
             mHandler.sendMessage(msg);
@@ -164,7 +179,8 @@ public class NetworkThreads {
         public void run() {
             CloseableHttpClient  netManager = HttpClients.createDefault();
             HttpGetHC4 gradeQueryGetRequest = new HttpGetHC4(QUERY_URL + "?number=" + loginInfo.number +
-                                            "&cookie=" + loginInfo.cookie + "&xn=" + xnStr +"&xq" + xqStr);
+                                            "&cookie=" + loginInfo.cookie + "&xn=" + xnStr +"&xq=" + xqStr
+                                            + "&xm=" + loginInfo.xm);
             String result = null;
             //HashMap<String,String> gradeList = new HashMap<String,String>();
             try {

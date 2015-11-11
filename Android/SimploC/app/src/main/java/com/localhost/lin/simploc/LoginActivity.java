@@ -35,11 +35,14 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.apache.http.client.methods.HttpGetHC4;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtilsHC4;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -78,6 +81,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private EditText mCheckCodeView;
 
     private String loginViewState,loginCookie;
+    NetworkThreads threads;
+    private int retryCount = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,7 +114,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         });
 
         /**启动后台线程获取登录验证码*/
-        NetworkThreads threads = new NetworkThreads(handler);
+        threads = new NetworkThreads(handler);
         Thread loginThread = new Thread(threads.new RecvLoginPageThread());
         loginThread.start();
 
@@ -328,6 +333,17 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                     Bitmap bitmap = BitmapFactory.decodeByteArray(imgRes, 0, imgRes.length);
                     iv.setImageBitmap(bitmap);
                 }
+            }else if(((String)msg.obj).equalsIgnoreCase("runError")){
+                String info = msg.getData().getString("info");
+                //登录界面获取错误，重试
+                if(info.equals("LoginPage")){
+                    new Thread(threads.new RecvLoginPageThread()).start();
+                    //重试次数大于5，退出程序
+                    if( ++retryCount > 5){
+                        Toast.makeText(LoginActivity.this,"网络连接错误",Toast.LENGTH_LONG);
+                        LoginActivity.this.finish();
+                    }
+                }
             }
         }
     };
@@ -353,6 +369,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             // TODO: attempt authentication against a network service.
 
             String result = null;
+            String xmStr = "",canLogin="";
             CloseableHttpClient netManager = HttpClients.createDefault();
             HttpGetHC4 tryLoginGetRequest = new HttpGetHC4(NetworkThreads.TRY_LOGIN_URL + "?number=" + mEmail +
                     "&password=" + mPassword + "&checkCode="
@@ -362,11 +379,19 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             NetworkThreads.loginInfo.number = mEmail;
             NetworkThreads.loginInfo.password = mPassword;
             try {
-                result = EntityUtilsHC4.toString(netManager.execute(tryLoginGetRequest).getEntity());
+                result = EntityUtilsHC4.toString(netManager.execute(tryLoginGetRequest).getEntity(),"gb2312");
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            if(result.equals("0")){
+            try {
+                canLogin = new JSONObject(result).getJSONObject("TRY").get("can").toString();
+                xmStr = new JSONObject(result).getJSONObject("TRY").get("xm").toString();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            NetworkThreads.loginInfo.xm = xmStr;
+            if(canLogin.equals("0")){
                 return false;
             }
 
@@ -400,7 +425,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 finish();
             } else {
                 showProgress(false);
+                new Thread(threads.new RecvLoginPageThread()).start();
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
+                mCheckCodeView.setError(getString(R.string.error_maybe_invalid_checkcode));
                 mPasswordView.requestFocus();
             }
         }
