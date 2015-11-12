@@ -4,6 +4,10 @@ import android.content.Entity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
+
+import com.localhost.lin.simploc.com.localhost.lin.simploc.Entity.LoginInfo;
+import com.localhost.lin.simploc.com.localhost.lin.simploc.SQLite.SQLiteOperation;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -31,22 +35,23 @@ import java.util.Map;
 public class NetworkThreads {
     //public static final String HOST_URL           = "http://172.20.27.41:8080/SimploServer";
     //public static final String HOST_URL           = "http://192.168.1.102:8080/SimploServer";
-    public static final String HOST_URL           = "http://www.pockitcampus.com/SimploServer/";
+    public static final String HOST_URL           = "http://www.pockitcampus.com/SimploServer";
     public static final String LOGIN_URL          = HOST_URL + "/LoginPageServlet";
     public static final String TRY_LOGIN_URL     = HOST_URL + "/TryLoginServlet";
     public static final String C_IMG_URL          = HOST_URL + "/CheckImgServlet";
     public static final String QUERY_URL          = HOST_URL + "/QueryGradeServlet";
 
-    final class LoginInfo{
-        public String number;
-        public String password;
-        public String checkCode;
-        public String viewState;
-        public String cookie;
-        public String xm;
-    };
+//    final class LoginInfo{
+//        public String number;
+//        public String password;
+//        public String checkCode;
+//        public String viewState;
+//        public String cookie;
+//        public String xm;
+//    };
     public static LoginInfo loginInfo = null;
     private Handler mHandler;
+
     NetworkThreads(Handler handler){
         mHandler = handler;
         if (loginInfo == null) {
@@ -121,8 +126,8 @@ public class NetworkThreads {
                 }
             }
 
-            loginInfo.viewState = tmpData.get("viewState");
-            loginInfo.cookie    = tmpData.get("cookie");
+            loginInfo.setViewState(tmpData.get("viewState"));
+            loginInfo.setCookie(tmpData.get("cookie"));
 //            loginBundle.putString("viewState",tmpData.get("viewState"));
 //            loginBundle.putString("cookie", tmpData.get("cookie"));
             loginBundle.putString("viewState",tmpData.get("viewState"));
@@ -147,12 +152,12 @@ public class NetworkThreads {
             CloseableHttpClient  netManager = HttpClients.createDefault();
             HttpGetHC4 tryLoginGetRequest = new HttpGetHC4(TRY_LOGIN_URL + "?number=" + num +
                                                         "&password=" + passwd + "&checkCode="
-                                                        + checkC + "&viewState=" + loginInfo.viewState
-                                                        + "&cookie=" + loginInfo.cookie);
+                                                        + checkC + "&viewState=" + loginInfo.getViewState()
+                                                        + "&cookie=" + loginInfo.getCookie());
             String result = null;
-            loginInfo.checkCode = checkC;
-            loginInfo.number = num;
-            loginInfo.password = passwd;
+            loginInfo.setCheckCode(checkC);
+            loginInfo.setNumber(num);
+            loginInfo.setPassword(passwd);
             try {
                 result = EntityUtilsHC4.toString(netManager.execute(tryLoginGetRequest).getEntity());
             } catch (IOException e) {
@@ -171,16 +176,23 @@ public class NetworkThreads {
 
     public class QueryGradeThread implements Runnable{
         private String xnStr = null,xqStr = null;
-        public QueryGradeThread(String xnString,String xqString){
+        private SQLiteOperation mSqLiteOperation;
+        public QueryGradeThread(String xnString,String xqString,SQLiteOperation sqLiteOperation){
             xnStr = xnString;
             xqStr = xqString;
+            mSqLiteOperation = sqLiteOperation;
         }
         @Override
         public void run() {
             CloseableHttpClient  netManager = HttpClients.createDefault();
-            HttpGetHC4 gradeQueryGetRequest = new HttpGetHC4(QUERY_URL + "?number=" + loginInfo.number +
-                                            "&cookie=" + loginInfo.cookie + "&xn=" + xnStr +"&xq=" + xqStr
-                                            + "&xm=" + loginInfo.xm);
+            Log.d("Network:cookie--",NetworkThreads.loginInfo.getCookie());
+            String[] loginMsg = mSqLiteOperation.find(loginInfo.getNumber());
+            HttpGetHC4 gradeQueryGetRequest = new HttpGetHC4(QUERY_URL + "?number=" + loginMsg[1] +
+                                            "&cookie=" + loginMsg[3] + "&xn=" + xnStr +"&xq=" + xqStr
+                                            + "&xm=" + loginMsg[4]);
+            Log.d("GradeQuerying........",QUERY_URL + "?number=" + loginInfo.getNumber() +
+                    "&cookie=" + loginInfo.getCookie() + "&xn=" + xnStr +"&xq=" + xqStr
+                    + "&xm=" + loginInfo.getXm());
             String result = null;
             //HashMap<String,String> gradeList = new HashMap<String,String>();
             try {

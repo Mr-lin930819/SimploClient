@@ -34,6 +34,8 @@ import android.widget.TextView;
 
 import android.net.Uri;
 
+import com.localhost.lin.simploc.com.localhost.lin.simploc.SQLite.SQLiteOperation;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.util.zip.Inflater;
@@ -44,11 +46,13 @@ public class MainActivity extends AppCompatActivity
     NetworkThreads threads = null;
     private String resultJson;
     WebView resultWebview;
+    SQLiteOperation sqLiteOperation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        sqLiteOperation = new SQLiteOperation(this);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -106,8 +110,8 @@ public class MainActivity extends AppCompatActivity
         TextView numberText = (TextView)navHeader.findViewById(R.id.nav_number_text);
         //TextView nameText = (TextView)(navigationView.inflateHeaderView(R.layout.nav_header_main)).findViewById(R.id.navbar_name_text);
         //TextView nameText = (TextView)navHeader.findViewById(R.id.navbar_name_text);
-        nameText.setText(NetworkThreads.loginInfo.xm);
-        numberText.setText(NetworkThreads.loginInfo.number);
+        nameText.setText(NetworkThreads.loginInfo.getXm());
+        numberText.setText(NetworkThreads.loginInfo.getNumber());
     }
 
     @Override
@@ -153,13 +157,13 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.nav_camara) {
             // Handle the camera action
             resultWebview.loadUrl("file:///android_asset/wait_page.html");
-            new Thread(threads.new QueryGradeThread("2012-2013", "")).start();
+            new Thread(threads.new QueryGradeThread("2012-2013", "",sqLiteOperation)).start();
         } else if (id == R.id.nav_gallery) {
             resultWebview.loadUrl("file:///android_asset/wait_page.html");
-            new Thread(threads.new QueryGradeThread("2013-2014", "")).start();
+            new Thread(threads.new QueryGradeThread("2013-2014", "",sqLiteOperation)).start();
         } else if (id == R.id.nav_slideshow) {
             resultWebview.loadUrl("file:///android_asset/wait_page.html");
-            new Thread(threads.new QueryGradeThread("2014-2015", "")).start();
+            new Thread(threads.new QueryGradeThread("2014-2015", "",sqLiteOperation)).start();
         } else if (id == R.id.nav_manage) {
 //            RelativeLayout layout = (RelativeLayout) findViewById(R.id.main_page);
 //            layout.removeAllViews();
@@ -177,13 +181,15 @@ public class MainActivity extends AppCompatActivity
 //            layout.addView(resultView);
 
         } else if (id == R.id.nav_share) {
-            resultWebview.loadUrl("file:///android_asset/wait_page.html");
+            //resultWebview.loadUrl("file:///android_asset/wait_page.html");
+            startActivity(new Intent().setClass(MainActivity.this,SettingActivity.class));
         } else if (id == R.id.nav_send) {
             Intent intent = new Intent();
             intent.setClass(MainActivity.this,LoginActivity.class);
+            //设置数据库中登录状态为登出
+            sqLiteOperation.updateLoginStatus(NetworkThreads.loginInfo.getNumber(),"0");
             startActivity(intent);
             finish();
-            //resultWebview.loadUrl("file:///android_asset/result_page.html");
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

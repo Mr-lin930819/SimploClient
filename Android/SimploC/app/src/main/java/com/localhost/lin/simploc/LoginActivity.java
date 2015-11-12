@@ -25,6 +25,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -37,6 +38,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.localhost.lin.simploc.com.localhost.lin.simploc.SQLite.SQLiteOperation;
+
 import org.apache.http.client.methods.HttpGetHC4;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -45,6 +48,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -82,15 +86,34 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
     private String loginViewState,loginCookie;
     NetworkThreads threads;
+    SQLiteOperation sqLiteOperation;
     private int retryCount = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        //数据库操作
+        sqLiteOperation = new SQLiteOperation(this);
+        /**启动后台线程获取登录验证码*/
+        threads = new NetworkThreads(handler);
+
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
         populateAutoComplete();
+        mEmailView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                String [] info = null;
+                if (v.getText().length() == 12){
+                    info = sqLiteOperation.find(v.getText().toString());
+                    if(info != null){
+                        mPasswordView.setText(info[2]);
+                    }
+                }
+                return false;
+            }
+        });
 
         mPasswordView = (EditText) findViewById(R.id.password);
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -113,8 +136,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             }
         });
 
-        /**启动后台线程获取登录验证码*/
-        threads = new NetworkThreads(handler);
         Thread loginThread = new Thread(threads.new RecvLoginPageThread());
         loginThread.start();
 
@@ -123,11 +144,24 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     }
 
     private void populateAutoComplete() {
+        String nowDate = new SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date());
+        String number = sqLiteOperation.findLoginUser(nowDate);
         if (!mayRequestContacts()) {
             return;
         }
-
-        getLoaderManager().initLoader(0, null, this);
+        //如果当天已登录，则自动登陆
+        if( number != null){
+            String[] data = sqLiteOperation.find(number);
+            NetworkThreads.loginInfo.setNumber(data[1]);
+            NetworkThreads.loginInfo.setCookie(data[3]);
+            NetworkThreads.loginInfo.setXm(data[4]);
+            startActivity(new Intent().setClass(LoginActivity.this,MainActivity.class));
+            finish();
+        }else{
+            List<String> list = sqLiteOperation.getAllNumber();
+            addEmailsToAutoComplete(list);
+        }
+        //getLoaderManager().initLoader(0, null, this);
     }
 
     private boolean mayRequestContacts() {
@@ -375,9 +409,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                     "&password=" + mPassword + "&checkCode="
                     + mCheckCode + "&viewState=" + loginViewState
                     + "&cookie=" + loginCookie);
-            NetworkThreads.loginInfo.checkCode = mCheckCode;
-            NetworkThreads.loginInfo.number = mEmail;
-            NetworkThreads.loginInfo.password = mPassword;
+            NetworkThreads.loginInfo.setCheckCode(mCheckCode);
+            NetworkThreads.loginInfo.setNumber(mEmail);
+            NetworkThreads.loginInfo.setPassword(mPassword);
             try {
                 result = EntityUtilsHC4.toString(netManager.execute(tryLoginGetRequest).getEntity(),"gb2312");
             } catch (IOException e) {
@@ -390,11 +424,18 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 e.printStackTrace();
             }
 
-            NetworkThreads.loginInfo.xm = xmStr;
+            NetworkThreads.loginInfo.setXm(xmStr);
             if(canLogin.equals("0")){
                 return false;
             }
-
+            //将用户登录信息存入数据库
+            if(sqLiteOperation.find(mEmail) == null){
+                sqLiteOperation.insertUser(mEmail,mPassword,loginCookie,xmStr);
+                sqLiteOperation.insertLog(mEmail,new SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date()),"1");
+            }else {
+                Log.d("SQLITE Update:","cookie--"+loginCookie);
+                sqLiteOperation.updateLoginInfo(mEmail, new SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date()), loginCookie);
+            }
 //            try {
 //                // Simulate network access.
 //                Thread.sleep(2000);

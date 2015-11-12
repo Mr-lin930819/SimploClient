@@ -12,12 +12,12 @@
             android:title="Tools" />
     </group>
 
-    <item android:title="Communicate">
+    <item android:title="系统功能">
         <menu>
             <item android:id="@+id/nav_share" android:icon="@android:drawable/ic_menu_share"
-                android:title="设置(null)" />
+                android:title="设置" />
             <item android:id="@+id/nav_send" android:icon="@android:drawable/ic_menu_send"
-                android:title="登出(null)" />
+                android:title="登出" />
         </menu>
     </item>
 

@@ -15,8 +15,8 @@ public class DatabaseOperator extends SQLiteOpenHelper{
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("create table userInfo(id int,number varchar(12),password varchar(20),cookie varchar(50),name varchar(20))");
-        db.execSQL("create table loginLog(lastLogin date, hadLogin smallint)");
+        db.execSQL("create table userInfo(id INTEGER PRIMARY KEY AUTOINCREMENT,number varchar(12),password varchar(20),cookie varchar(50),name varchar(20))");
+        db.execSQL("create table loginLog(id INTEGER ,lastLogin date, hadLogin smallint)");
     }
 
     @Override
