@@ -1,4 +1,4 @@
-package com.localhost.lin.simploc.com.localhost.lin.simploc.Entity;
+package com.localhost.lin.simploc.Entity;
 
 /**
  * Created by Lin on 2015/11/12.

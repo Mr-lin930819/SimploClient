@@ -1,9 +1,9 @@
 package com.localhost.lin.simploc;
 
-import android.app.Application;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -23,29 +23,39 @@ import android.view.MenuItem;
 import android.webkit.JavascriptInterface;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
-import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
 import android.widget.TabHost;
 import android.widget.TextView;
 
-import android.net.Uri;
+import com.localhost.lin.simploc.SQLite.SQLiteOperation;
+import com.localhost.lin.simploc.Utils.ImageUtils;
+import com.localhost.lin.simploc.Utils.JsonUtils;
+import com.localhost.lin.simploc.Utils.NetworkUtils;
+import com.localhost.lin.simploc.customview.MaskImage;
 
-import com.localhost.lin.simploc.com.localhost.lin.simploc.SQLite.SQLiteOperation;
+import org.apache.http.client.methods.HttpGetHC4;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtilsHC4;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URISyntaxException;
-import java.util.zip.Inflater;
+import java.io.IOException;
+import java.security.PublicKey;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    private static final int SETTING_REQUEST_CODE = 1;
     NetworkThreads threads = null;
     private String resultJson;
     WebView resultWebview;
+    MaskImage toxiang;
+    ListView gradeList;
     SQLiteOperation sqLiteOperation;
 
     @Override
@@ -76,19 +86,6 @@ public class MainActivity extends AppCompatActivity
 
  //       final Button loginButton = (Button) findViewById(R.id.btn_login);
         threads = new NetworkThreads(handler);
-//        final EditText nameET = (EditText) findViewById(R.id.stu_num_edit);
-//        final EditText passET = (EditText) findViewById(R.id.stu_passwd_edit);
-//        final EditText checkET = (EditText) findViewById(R.id.code_edit);
-//
-//
-//        loginButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                new Thread(threads.new TryLoginThread(nameET.getText().toString(), passET.getText().toString()
-//                        , checkET.getText().toString())).start();
-//                loginButton.setClickable(false);
-//            }
-//        });
 
         TabHost tabHost = (TabHost)findViewById(R.id.tabHost);
         tabHost.setup();
@@ -104,14 +101,20 @@ public class MainActivity extends AppCompatActivity
         resultWebview.addJavascriptInterface(new JsObject(), "jsObject");
         resultWebview.loadUrl("file:///android_asset/welcome_page.html");
 
+        gradeList = (ListView)findViewById(R.id.grade_listview);
+
         //View navHeader = View.inflate(navigationView.getContext(),R.layout.nav_header_main,null);
         View navHeader = navigationView.inflateHeaderView(R.layout.nav_header_main);
         TextView nameText = (TextView)navHeader.findViewById(R.id.navbar_name_text);
         TextView numberText = (TextView)navHeader.findViewById(R.id.nav_number_text);
+        toxiang = (MaskImage)navHeader.findViewById(R.id.imageView);
         //TextView nameText = (TextView)(navigationView.inflateHeaderView(R.layout.nav_header_main)).findViewById(R.id.navbar_name_text);
         //TextView nameText = (TextView)navHeader.findViewById(R.id.navbar_name_text);
         nameText.setText(NetworkThreads.loginInfo.getXm());
         numberText.setText(NetworkThreads.loginInfo.getNumber());
+        Log.d("COOOOOOOOOOOOK",NetworkThreads.loginInfo.getCookie());
+        //获取头像图片
+        new AvatarGetTask(NetworkThreads.loginInfo.getNumber(),NetworkThreads.loginInfo.getCookie()).execute((Void)null);
     }
 
     @Override
@@ -165,24 +168,12 @@ public class MainActivity extends AppCompatActivity
             resultWebview.loadUrl("file:///android_asset/wait_page.html");
             new Thread(threads.new QueryGradeThread("2014-2015", "",sqLiteOperation)).start();
         } else if (id == R.id.nav_manage) {
-//            RelativeLayout layout = (RelativeLayout) findViewById(R.id.main_page);
-//            layout.removeAllViews();
-//            View view = getLayoutInflater().inflate(R.layout.activity_result_page, null);
-//
-//            RelativeLayout resultView = (RelativeLayout) view.findViewById(R.id.result_view);
-//            WebView resultWebview = (WebView) findViewById(R.id.result_web_view);
-//
-//            resultWebview.setWebChromeClient(new MyWebChromeClient());
-//            resultWebview.getSettings().setJavaScriptEnabled(true);
-//            resultWebview.addJavascriptInterface(new JsObject(), "jsObject");
-
             resultWebview.loadUrl("file:///android_asset/result_page.html");
-            //resultWebview.loadUrl("javascript:setData("+resultJson+")");
-//            layout.addView(resultView);
 
         } else if (id == R.id.nav_share) {
             //resultWebview.loadUrl("file:///android_asset/wait_page.html");
-            startActivity(new Intent().setClass(MainActivity.this,SettingActivity.class));
+            startActivityForResult(new Intent().setClass(MainActivity.this, SettingActivity.class), SETTING_REQUEST_CODE);
+            overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.fade_out);
         } else if (id == R.id.nav_send) {
             Intent intent = new Intent();
             intent.setClass(MainActivity.this,LoginActivity.class);
@@ -195,6 +186,20 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == SETTING_REQUEST_CODE){
+            //如果要求（删除用户后）登出：
+            if(resultCode == RESULT_OK && data.getStringExtra("action").equals("logout")){
+                Intent intent = new Intent();
+                intent.setClass(MainActivity.this, LoginActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        }
     }
 
     /**
@@ -234,14 +239,25 @@ public class MainActivity extends AppCompatActivity
                 WebView resultWebview = (WebView) findViewById(R.id.result_web_view);
 
                 resultJson = msg.getData().getString("json");
-                Log.d("LLAALLAA",resultJson);
+                Log.d("LLAALLAA", resultJson);
                 resultWebview.setWebChromeClient(new MyWebChromeClient());
                 resultWebview.getSettings().setJavaScriptEnabled(true);
                 resultWebview.addJavascriptInterface(new JsObject(), "jsObject");
 
                 resultWebview.loadUrl("file:///android_asset/result_page.html");
-                //resultWebview.loadUrl("javascript:setData("+resultJson+")");
-//                layout.addView(resultView);
+
+                //添加列表数据
+                ArrayList<Map<String,String>> data = new ArrayList<Map<String, String>>();
+                for(Map.Entry<String,String> item:JsonUtils.convJson2Map(resultJson,"GRADE").entrySet()){
+                    Map<String,String> map  = new HashMap<String,String>();
+                    Log.d("MainActivity 253:",item.getKey() +"," + item.getValue());
+                    map.put("item",item.getKey());
+                    map.put("value",item.getValue());
+                    data.add(map);
+                }
+                SimpleAdapter adapter = new SimpleAdapter(MainActivity.this,data,R.layout.grade_list_item,
+                        new String[]{"item","value"},new int[]{R.id.grade_item,R.id.grade_value});
+                gradeList.setAdapter(adapter);
             }
         }
     };
@@ -271,6 +287,47 @@ public class MainActivity extends AppCompatActivity
             Log.d("Web Console------>", message);
             result.confirm();
             return true;
+        }
+    }
+
+    private class AvatarGetTask extends AsyncTask<Void,Void,Bitmap>{
+        private String mNumber;
+        private String mCookie;
+        public AvatarGetTask(String number,String cookie) {
+            mCookie = cookie;
+            mNumber = number;
+        }
+
+        @Override
+        protected Bitmap doInBackground(Void... params) {
+            CloseableHttpClient netManager = HttpClients.createDefault();
+            Bitmap retImage = null;
+            HttpGetHC4 gradeQueryGetRequest = new HttpGetHC4(NetworkUtils.AVATOR_URL + "?number=" + mNumber +
+                    "&cookie=" + mCookie);
+            byte[] result = null;
+            //HashMap<String,String> gradeList = new HashMap<String,String>();
+            try {
+                result = EntityUtilsHC4.toByteArray(netManager.execute(gradeQueryGetRequest).getEntity());
+                //gradeList = convJson2Map(result,"GRADE");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Log.d("MainActivity 315:",String.valueOf(result.length));
+
+            retImage = BitmapFactory.decodeByteArray(result,0,result.length);
+            retImage = ImageUtils.ImageCrop(retImage);
+            retImage = ImageUtils.scaleImage(retImage,72,72);
+            return retImage;
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            super.onPostExecute(bitmap);
+            if(bitmap == null){
+                return;
+            }
+            //获取到头像后设置头像到界面
+            toxiang.setMaskBitmap(bitmap, BitmapFactory.decodeResource(getResources(), R.drawable.mask));
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.localhost.lin.simploc.com.localhost.lin.simploc.SQLite;
+package com.localhost.lin.simploc.SQLite;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;

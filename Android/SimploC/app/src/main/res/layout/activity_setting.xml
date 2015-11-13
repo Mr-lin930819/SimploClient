@@ -28,7 +28,7 @@
     </TableLayout>
 
     <Button android:text="删除用户" android:background="@drawable/delete_button_style"
-        android:textColor="@color/colorWhite"
+        android:textColor="@color/colorWhite" android:id="@+id/delete_user_btn"
         android:layout_height="wrap_content" android:layout_width="fill_parent"
         android:layout_alignParentBottom="true">
     </Button>

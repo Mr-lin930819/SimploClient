@@ -1,33 +1,24 @@
 package com.localhost.lin.simploc;
 
-import android.content.Entity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
-import com.localhost.lin.simploc.com.localhost.lin.simploc.Entity.LoginInfo;
-import com.localhost.lin.simploc.com.localhost.lin.simploc.SQLite.SQLiteOperation;
+import com.localhost.lin.simploc.Entity.LoginInfo;
+import com.localhost.lin.simploc.SQLite.SQLiteOperation;
+import com.localhost.lin.simploc.Utils.JsonUtils;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGetHC4;
-import org.apache.http.client.methods.HttpPostHC4;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.apache.http.util.EntityUtilsHC4;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 
 /**
  * Created by Lin on 2015/11/5.
@@ -63,25 +54,6 @@ public class NetworkThreads {
         this.mHandler = mHandler;
     }
 
-    HashMap<String,String> convJson2Map(String json,String node){
-        HashMap<String,String> data = new HashMap<String,String>();
-
-        JSONObject jsonObj = null,jsonArr = null;
-        try {
-            jsonObj = new JSONObject(json);
-            jsonArr = jsonObj.getJSONObject(node);
-            Iterator<String> iterator = jsonArr.keys();
-            while (iterator.hasNext()){
-                String key = iterator.next();
-                data.put(key,jsonArr.getString(key));
-            }
-        } catch (JSONException e) {
-            return null;
-//            e.printStackTrace();
-        }
-        return data;
-    }
-
     public class RecvLoginPageThread implements Runnable{
         @Override
         public void run() {
@@ -99,7 +71,7 @@ public class NetworkThreads {
             try {
                 loginPage   = EntityUtilsHC4.toString(netManager.execute(loginGetRequest).getEntity());
                 //获得单次查询会话的Cookie和ViewState,保存。
-                tmpData = convJson2Map(loginPage, "loginPage");
+                tmpData = JsonUtils.convJson2Map(loginPage, "loginPage");
                 if(tmpData == null){
                     msg.obj = "runError";
                     loginBundle.putString("info", "LoginPage");
@@ -190,9 +162,6 @@ public class NetworkThreads {
             HttpGetHC4 gradeQueryGetRequest = new HttpGetHC4(QUERY_URL + "?number=" + loginMsg[1] +
                                             "&cookie=" + loginMsg[3] + "&xn=" + xnStr +"&xq=" + xqStr
                                             + "&xm=" + loginMsg[4]);
-            Log.d("GradeQuerying........",QUERY_URL + "?number=" + loginInfo.getNumber() +
-                    "&cookie=" + loginInfo.getCookie() + "&xn=" + xnStr +"&xq=" + xqStr
-                    + "&xm=" + loginInfo.getXm());
             String result = null;
             //HashMap<String,String> gradeList = new HashMap<String,String>();
             try {

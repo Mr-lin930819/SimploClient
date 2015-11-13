@@ -1,4 +1,4 @@
-package com.localhost.lin.simploc.com.localhost.lin.simploc.customview;
+package com.localhost.lin.simploc.customview;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -54,5 +54,25 @@ public class MaskImage extends ImageView{
         setScaleType(ScaleType.CENTER);
 
         a.recycle();
+    }
+
+    public void setMaskBitmap(Bitmap original,Bitmap mask){
+
+        if (mException != null)
+            throw mException;
+        /**
+         * 主要代码实现
+         */
+        //获取遮罩层图片
+        Bitmap result = Bitmap.createBitmap(mask.getWidth(), mask.getHeight(), Config.ARGB_8888);
+        //将遮罩层的图片放到画布中
+        Canvas mCanvas = new Canvas(result);
+        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));//叠加重复的部分，显示下面的
+        mCanvas.drawBitmap(original, 0, 0, null);
+        mCanvas.drawBitmap(mask, 0, 0, paint);
+        paint.setXfermode(null);
+        setImageBitmap(result);
+        setScaleType(ScaleType.CENTER);
     }
 }

@@ -38,7 +38,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.localhost.lin.simploc.com.localhost.lin.simploc.SQLite.SQLiteOperation;
+import com.localhost.lin.simploc.SQLite.SQLiteOperation;
 
 import org.apache.http.client.methods.HttpGetHC4;
 import org.apache.http.impl.client.CloseableHttpClient;
