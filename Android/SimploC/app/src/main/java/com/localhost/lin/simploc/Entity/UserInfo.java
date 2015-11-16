@@ -11,6 +11,7 @@ public class UserInfo {
     private String name;
     private String lastLogin;
     private String hadLogin;
+    private boolean isShowAvator;
 
     public String getId() {
         return id;
@@ -66,5 +67,13 @@ public class UserInfo {
 
     public void setHadLogin(String hadLogin) {
         this.hadLogin = hadLogin;
+    }
+
+    public boolean isShowAvator() {
+        return isShowAvator;
+    }
+
+    public void setIsShowAvator(boolean isShowAvator) {
+        this.isShowAvator = isShowAvator;
     }
 }

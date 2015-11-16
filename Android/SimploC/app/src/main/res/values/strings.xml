@@ -23,5 +23,6 @@
         completions."
     </string>
     <string name="title_activity_settings">设置</string>
+    <string name="set_is_show_avator">显示头像</string>
 
 </resources>

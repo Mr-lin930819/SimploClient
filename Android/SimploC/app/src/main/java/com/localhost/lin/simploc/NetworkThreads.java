@@ -8,6 +8,7 @@ import android.util.Log;
 import com.localhost.lin.simploc.Entity.LoginInfo;
 import com.localhost.lin.simploc.SQLite.SQLiteOperation;
 import com.localhost.lin.simploc.Utils.JsonUtils;
+import com.localhost.lin.simploc.Utils.NetworkUtils;
 
 import org.apache.http.client.methods.HttpGetHC4;
 import org.apache.http.impl.client.CloseableHttpClient;

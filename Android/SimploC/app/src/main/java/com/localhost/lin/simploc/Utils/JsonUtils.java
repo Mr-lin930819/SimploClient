@@ -1,8 +1,10 @@
 package com.localhost.lin.simploc.Utils;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -30,5 +32,37 @@ public class JsonUtils {
 //            e.printStackTrace();
         }
         return data;
+    }
+
+    public static ArrayList<String> convJson2List(String json,String node){
+        ArrayList<String> data = new ArrayList<String>();
+        JSONObject jsonObject = null;
+        JSONArray jsonArray = null;
+        try{
+            jsonObject = new JSONObject(json);
+            if(node != null)
+                jsonArray = jsonObject.getJSONArray(node);
+            else
+                jsonArray = new JSONArray(json);
+            for(int i=0;i<jsonArray.length();i++){
+                data.add(jsonArray.getString(i));
+            }
+        } catch (JSONException e) {
+            return null;
+        }
+        return data;
+    }
+
+    public static String getNodeString(String json,String node){
+        String retData = null;
+        JSONObject jsonObject = null;
+        try{
+            jsonObject = new JSONObject(json);
+            if(node != null)
+                retData = jsonObject.getString(node);
+        } catch (JSONException e) {
+            return null;
+        }
+        return retData;
     }
 }
