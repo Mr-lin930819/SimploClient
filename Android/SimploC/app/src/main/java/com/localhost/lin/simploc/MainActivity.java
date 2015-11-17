@@ -36,6 +36,9 @@ import com.localhost.lin.simploc.Utils.ImageUtils;
 import com.localhost.lin.simploc.Utils.JsonUtils;
 import com.localhost.lin.simploc.Utils.NetworkUtils;
 import com.localhost.lin.simploc.customview.MaskImage;
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.RequestParams;
+import com.loopj.android.http.TextHttpResponseHandler;
 
 import org.apache.http.client.methods.HttpGetHC4;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -47,6 +50,8 @@ import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+import cz.msebera.android.httpclient.Header;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -118,10 +123,42 @@ public class MainActivity extends AppCompatActivity
         numberText.setText(userInfo.getNumber());
 
         //获取专业名称
-        new MajorGetTask().execute(userInfo.getNumber(), userInfo.getName(),userInfo.getCookie());
+        //new MajorGetTask().execute(userInfo.getNumber(), userInfo.getName(),userInfo.getCookie());
+        loadMajorName();
+
         //获取头像图片
         if (sqLiteOperation.queryIsShowAvator(userInfo.getNumber()))
             new AvatarGetTask(userInfo.getNumber(), userInfo.getCookie()).execute((Void)null);
+    }
+
+    private void loadMajorName(){
+        AsyncHttpClient client = new AsyncHttpClient();
+        client.get(NetworkUtils.XN_OPTIONS_URL, new RequestParams(new HashMap<String, String>() {
+            {
+                put("number", userInfo.getNumber());
+                put("xm", userInfo.getName());
+                put("cookie", userInfo.getCookie());
+            }
+        }), new TextHttpResponseHandler() {
+            @Override
+            public void onStart() {
+                super.onStart();
+                setCharset("gb2312");
+            }
+
+            @Override
+            public void onFailure(int i, Header[] headers, String s, Throwable throwable) {
+
+            }
+
+            @Override
+            public void onSuccess(int i, Header[] headers, String s) {
+                String retData = null;
+                retData = JsonUtils.getNodeString(s, "ZY");//获取专业信息
+                nameText.setText(NetworkThreads.loginInfo.getXm() + "\t\t" + retData);
+            }
+
+        });
     }
 
     @Override
@@ -138,6 +175,7 @@ public class MainActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+
         return true;
     }
 
@@ -218,6 +256,7 @@ public class MainActivity extends AppCompatActivity
         }else if(requestCode == CUSTOM_QUERY_REQUEST_CODE){//自定义查询成绩
             if(resultCode == RESULT_OK){
                 Log.d("CUSTOM RESULT:" ,data.getStringExtra("xn")+ ","+data.getStringExtra("xq"));
+                resultWebview.loadUrl("file:///android_asset/wait_page.html");
                 new Thread(threads.new QueryGradeThread(data.getStringExtra("xn"),data.getStringExtra("xq"),sqLiteOperation)).start();
             }
         }
@@ -364,28 +403,28 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private class MajorGetTask extends AsyncTask<String,Void,String>{
-        @Override
-        protected String doInBackground(String... params) {
-            String result = null,retData = null;
-            CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
-            HttpGetHC4 request = new HttpGetHC4(NetworkUtils.XN_OPTIONS_URL+"?number="+params[0]
-                    +"&xm="+params[1] + "&cookie="+params[2]);
-            try {
-                result = EntityUtilsHC4.toString(closeableHttpClient.execute(request).getEntity(),"gb2312");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            System.out.print(result);
-            retData = JsonUtils.getNodeString(result, "ZY");//获取专业信息
-            return retData;
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            nameText.setText(NetworkThreads.loginInfo.getXm() + "\t\t" + s);
-
-        }
-    }
+//    private class MajorGetTask extends AsyncTask<String,Void,String>{
+//        @Override
+//        protected String doInBackground(String... params) {
+//            String result = null,retData = null;
+//            CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
+//            HttpGetHC4 request = new HttpGetHC4(NetworkUtils.XN_OPTIONS_URL+"?number="+params[0]
+//                    +"&xm="+params[1] + "&cookie="+params[2]);
+//            try {
+//                result = EntityUtilsHC4.toString(closeableHttpClient.execute(request).getEntity(),"gb2312");
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//            System.out.print(result);
+//            retData = JsonUtils.getNodeString(result, "ZY");//获取专业信息
+//            return retData;
+//        }
+//
+//        @Override
+//        protected void onPostExecute(String s) {
+//            super.onPostExecute(s);
+//            nameText.setText(NetworkThreads.loginInfo.getXm() + "\t\t" + s);
+//
+//        }
+//    }
 }

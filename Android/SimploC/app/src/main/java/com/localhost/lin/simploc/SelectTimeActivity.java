@@ -12,10 +12,15 @@ import android.widget.Adapter;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.localhost.lin.simploc.SQLite.SQLiteOperation;
 import com.localhost.lin.simploc.Utils.JsonUtils;
 import com.localhost.lin.simploc.Utils.NetworkUtils;
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
+import com.loopj.android.http.TextHttpResponseHandler;
 
 import org.apache.http.client.methods.HttpGetHC4;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -24,6 +29,7 @@ import org.apache.http.util.EntityUtilsHC4;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class SelectTimeActivity extends AppCompatActivity {
 
@@ -63,8 +69,39 @@ public class SelectTimeActivity extends AppCompatActivity {
             }
         });
 
-        GetOptionTask getOptionTask = new GetOptionTask();
-        getOptionTask.execute();
+//        GetOptionTask getOptionTask = new GetOptionTask();
+//        getOptionTask.execute();
+        loadOption();
+
+    }
+
+    private void loadOption(){
+        AsyncHttpClient httpClient = new AsyncHttpClient();
+        final String[] lgMsg = mSqLiteOperation.find(NetworkThreads.loginInfo.getNumber());
+        RequestParams params = new RequestParams(new HashMap<String,String>(){
+            {
+                put("number",NetworkThreads.loginInfo.getNumber());
+                put("xm",lgMsg[4]);
+                put("cookie",lgMsg[3]);
+            }
+        });
+        httpClient.get(NetworkUtils.XN_OPTIONS_URL, params, new TextHttpResponseHandler() {
+            @Override
+            public void onFailure(int i, cz.msebera.android.httpclient.Header[] headers, String s, Throwable throwable) {
+                Toast.makeText(SelectTimeActivity.this,"网络出错",Toast.LENGTH_LONG);
+                finish();
+            }
+
+            @Override
+            public void onSuccess(int i, cz.msebera.android.httpclient.Header[] headers, String s) {
+                ArrayList<String> retData = JsonUtils.convJson2List(s, "CXTJ");
+                ArrayAdapter xnAdapter = new ArrayAdapter<>(SelectTimeActivity.this,
+                        android.R.layout.simple_spinner_item,retData);
+                xnAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                xnSpinner.setAdapter(xnAdapter);
+                xnSpinner.setSelection(1);
+            }
+        });
     }
 
     @Override
@@ -76,32 +113,33 @@ public class SelectTimeActivity extends AppCompatActivity {
         return false;
     }
 
-    class GetOptionTask extends AsyncTask<Void,Void,ArrayList<String>>{
-        @Override
-        protected ArrayList<String> doInBackground(Void... params) {
-            ArrayList<String> retData;
-            String result = null;
-            CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
-            String[] loginMsg = mSqLiteOperation.find(NetworkThreads.loginInfo.getNumber());
-            HttpGetHC4 request = new HttpGetHC4(NetworkUtils.XN_OPTIONS_URL+"?number="+NetworkThreads.loginInfo.getNumber()
-                                            +"&xm="+loginMsg[4] + "&cookie="+loginMsg[3]);
-            try {
-                result = EntityUtilsHC4.toString(closeableHttpClient.execute(request).getEntity(),"gb2312");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            retData = JsonUtils.convJson2List(result,"CXTJ");
-            return retData;
-        }
-
-        @Override
-        protected void onPostExecute(ArrayList<String> strings) {
-            super.onPostExecute(strings);
-            ArrayAdapter xnAdapter = new ArrayAdapter<String>(SelectTimeActivity.this,
-                    android.R.layout.simple_spinner_item,strings);
-            xnAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-            xnSpinner.setAdapter(xnAdapter);
-            xnSpinner.setSelection(1);
-        }
-    }
+//    class GetOptionTask extends AsyncTask<Void,Void,ArrayList<String>>{
+//        @Override
+//        protected ArrayList<String> doInBackground(Void... params) {
+//            ArrayList<String> retData;
+//            String result = null;
+//
+//            CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
+//            String[] loginMsg = mSqLiteOperation.find(NetworkThreads.loginInfo.getNumber());
+//            HttpGetHC4 request = new HttpGetHC4(NetworkUtils.XN_OPTIONS_URL + "?number=" + NetworkThreads.loginInfo.getNumber()
+//                    + "&xm=" + loginMsg[4] + "&cookie=" + loginMsg[3]);
+//            try {
+//                result = EntityUtilsHC4.toString(closeableHttpClient.execute(request).getEntity(), "gb2312");
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//            retData = JsonUtils.convJson2List(result, "CXTJ");
+//            return retData;
+//        }
+//
+//        @Override
+//        protected void onPostExecute(ArrayList<String> strings) {
+//            super.onPostExecute(strings);
+//            ArrayAdapter xnAdapter = new ArrayAdapter<String>(SelectTimeActivity.this,
+//                    android.R.layout.simple_spinner_item,strings);
+//            xnAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+//            xnSpinner.setAdapter(xnAdapter);
+//            xnSpinner.setSelection(1);
+//        }
+//    }
 }

@@ -172,28 +172,7 @@ public class NetworkThreads {
                 e.printStackTrace();
             }
 
-//            File file = new File("file:///android_asset/result.json");
-//            if (!file.exists()) {
-//                try {
-//                    //在指定的文件夹中创建文件
-//                    file.createNewFile();
-//                } catch (Exception e) {
-//                }
-//            }
-//            try {
-//                FileWriter fileWriter = new FileWriter(file,false);
-//                BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-//                bufferedWriter.write(result);
-//                bufferedWriter.flush();
-//                bufferedWriter.close();
-//                fileWriter.close();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
             Bundle bundle = new Bundle();
-//            for(Map.Entry<String,String> entry:gradeList.entrySet()){
-//                bundle.putString(entry.getKey(),entry.getValue());
-//            }
             bundle.putString("json",result);
             System.out.print(result);
             Message msg = mHandler.obtainMessage();
