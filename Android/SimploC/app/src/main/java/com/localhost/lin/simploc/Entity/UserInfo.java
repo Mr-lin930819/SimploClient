@@ -1,25 +1,28 @@
 package com.localhost.lin.simploc.Entity;
 
+import android.util.Log;
+
+import org.litepal.crud.DataSupport;
+
 /**
  * Created by Lin on 2015/11/12.
  */
-public class UserInfo {
-    private String id;
+public class UserInfo extends DataSupport{
+    private long id;
     private String number;
     private String password;
     private String cookie;
     private String name;
-    private String lastLogin;
-    private String hadLogin;
-    private boolean isShowAvator;
+    private LoginLog loginLog;
 
-    public String getId() {
-        return id;
+    public LoginLog getLoginLog() {
+        return loginLog;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setLoginLog(LoginLog loginLog) {
+        this.loginLog = loginLog;
     }
+
 
     public String getNumber() {
         return number;
@@ -53,27 +56,4 @@ public class UserInfo {
         this.name = name;
     }
 
-    public String getLastLogin() {
-        return lastLogin;
-    }
-
-    public void setLastLogin(String lastLogin) {
-        this.lastLogin = lastLogin;
-    }
-
-    public String getHadLogin() {
-        return hadLogin;
-    }
-
-    public void setHadLogin(String hadLogin) {
-        this.hadLogin = hadLogin;
-    }
-
-    public boolean isShowAvator() {
-        return isShowAvator;
-    }
-
-    public void setIsShowAvator(boolean isShowAvator) {
-        this.isShowAvator = isShowAvator;
-    }
 }

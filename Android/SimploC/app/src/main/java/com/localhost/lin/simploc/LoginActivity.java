@@ -3,8 +3,10 @@ package com.localhost.lin.simploc;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Handler;
@@ -38,6 +40,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.localhost.lin.simploc.Entity.LoginLog;
+import com.localhost.lin.simploc.Entity.UserInfo;
 import com.localhost.lin.simploc.SQLite.SQLiteOperation;
 
 import org.apache.http.client.methods.HttpGetHC4;
@@ -46,6 +50,8 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtilsHC4;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.litepal.crud.DataSupport;
+import org.litepal.tablemanager.Connector;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -93,6 +99,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        SQLiteDatabase sqLiteDatabase = Connector.getDatabase();
         //数据库操作
         sqLiteOperation = new SQLiteOperation(this);
         /**启动后台线程获取登录验证码*/
@@ -391,6 +398,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         private final String mEmail;
         private final String mPassword;
         private final String mCheckCode;
+        private String mXmStr;
 
         UserLoginTask(String email, String password,String checkCode) {
             mEmail = email;
@@ -403,7 +411,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             // TODO: attempt authentication against a network service.
 
             String result = null;
-            String xmStr = "",canLogin="";
+            String canLogin="";
             CloseableHttpClient netManager = HttpClients.createDefault();
             HttpGetHC4 tryLoginGetRequest = new HttpGetHC4(NetworkThreads.TRY_LOGIN_URL + "?number=" + mEmail +
                     "&password=" + mPassword + "&checkCode="
@@ -419,18 +427,43 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             }
             try {
                 canLogin = new JSONObject(result).getJSONObject("TRY").get("can").toString();
-                xmStr = new JSONObject(result).getJSONObject("TRY").get("xm").toString();
+                mXmStr = new JSONObject(result).getJSONObject("TRY").get("xm").toString();
             } catch (JSONException e) {
                 e.printStackTrace();
             }
 
-            NetworkThreads.loginInfo.setXm(xmStr);
+            NetworkThreads.loginInfo.setXm(mXmStr);
             if(canLogin.equals("0")){
                 return false;
             }
+
+            //LitePal测试代码
+            if(DataSupport.where("number=?",mEmail).find(UserInfo.class).size() == 0){
+                UserInfo userInfo = new UserInfo();
+                LoginLog loginLog = new LoginLog();
+
+                loginLog.setLastLogin(new SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date()));
+                loginLog.setHadLogin("1");
+                loginLog.setShowAvator(false);
+                userInfo.setNumber(mEmail);
+                userInfo.setPassword(mPassword);
+                userInfo.setCookie(loginCookie);
+                userInfo.setName(mXmStr);
+                userInfo.setLoginLog(loginLog);
+                loginLog.save();
+                userInfo.save();
+            } else {
+                UserInfo userInfo = new UserInfo();
+                LoginLog loginLog = new LoginLog();
+                loginLog.setLastLogin(new SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date()));
+                userInfo.setCookie(loginCookie);
+                userInfo.setLoginLog(loginLog);
+                userInfo.updateAll("number=?",mEmail);
+            }
+
             //将用户登录信息存入数据库
             if(sqLiteOperation.find(mEmail) == null){
-                sqLiteOperation.insertUser(mEmail,mPassword,loginCookie,xmStr);
+                sqLiteOperation.insertUser(mEmail,mPassword,loginCookie,mXmStr);
                 sqLiteOperation.insertLog(mEmail,new SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date()),"1");
             }else {
                 Log.d("SQLITE Update:","cookie--"+loginCookie);

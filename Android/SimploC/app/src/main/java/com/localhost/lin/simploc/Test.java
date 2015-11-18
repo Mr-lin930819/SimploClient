@@ -12,7 +12,7 @@ import java.io.IOException;
 /**
  * Created by mrlin on 2015/11/6.
  */
-public class TestUnit {
+public class Test {
     static public String jsMethodTest(){
 
         String result = null;

@@ -30,6 +30,7 @@ import android.widget.SimpleAdapter;
 import android.widget.TabHost;
 import android.widget.TextView;
 
+import com.localhost.lin.simploc.Entity.UserEntity;
 import com.localhost.lin.simploc.Entity.UserInfo;
 import com.localhost.lin.simploc.SQLite.SQLiteOperation;
 import com.localhost.lin.simploc.Utils.ImageUtils;
@@ -44,6 +45,7 @@ import org.apache.http.client.methods.HttpGetHC4;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtilsHC4;
+import org.litepal.crud.DataSupport;
 
 import java.io.IOException;
 import java.security.PublicKey;
@@ -65,7 +67,7 @@ public class MainActivity extends AppCompatActivity
     TextView nameText;
     ListView gradeList;
     SQLiteOperation sqLiteOperation;
-    UserInfo userInfo = null;
+    UserEntity userInfo = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -255,7 +257,6 @@ public class MainActivity extends AppCompatActivity
             }
         }else if(requestCode == CUSTOM_QUERY_REQUEST_CODE){//自定义查询成绩
             if(resultCode == RESULT_OK){
-                Log.d("CUSTOM RESULT:" ,data.getStringExtra("xn")+ ","+data.getStringExtra("xq"));
                 resultWebview.loadUrl("file:///android_asset/wait_page.html");
                 new Thread(threads.new QueryGradeThread(data.getStringExtra("xn"),data.getStringExtra("xq"),sqLiteOperation)).start();
             }
@@ -335,7 +336,7 @@ public class MainActivity extends AppCompatActivity
         public String getJsonTest(){
             String ret = "";
 //            ret += "'";
-            ret += TestUnit.jsMethodTest();
+            ret += Test.jsMethodTest();
 //            ret += "'";
             return ret;
         }

@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+import com.localhost.lin.simploc.Entity.UserEntity;
 import com.localhost.lin.simploc.Entity.UserInfo;
 
 import java.util.ArrayList;
@@ -108,8 +109,8 @@ public class SQLiteOperation {
         return null;
     }
 
-    public UserInfo findUser(String number) {// 根据学号查找纪录
-        UserInfo tusers = new UserInfo();
+    public UserEntity findUser(String number) {// 根据学号查找纪录
+        UserEntity tusers = new UserEntity();
         SQLiteDatabase db = databaseOperator.getReadableDatabase();
         // 用游标Cursor接收从数据库检索到的数据
         Cursor cursor = db.rawQuery("select * from userInfo where number=?", new String[]{number});

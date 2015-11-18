@@ -10,7 +10,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 
+import com.localhost.lin.simploc.Entity.LoginLog;
+import com.localhost.lin.simploc.Entity.UserInfo;
 import com.localhost.lin.simploc.SQLite.SQLiteOperation;
+
+import org.litepal.crud.DataSupport;
 
 public class SettingActivity extends AppCompatActivity {
 
@@ -42,7 +46,7 @@ public class SettingActivity extends AppCompatActivity {
         checkBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sqLiteOperation.updateIsShowAvator(NetworkThreads.loginInfo.getNumber(),checkBox.isChecked());
+                sqLiteOperation.updateIsShowAvator(NetworkThreads.loginInfo.getNumber(), checkBox.isChecked());
             }
         });
     }
