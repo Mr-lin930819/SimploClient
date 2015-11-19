@@ -24,8 +24,15 @@ import android.webkit.JavascriptInterface;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
+import android.widget.AdapterView;
+import android.widget.GridLayout;
+import android.widget.GridView;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.SimpleAdapter;
 import android.widget.TabHost;
 import android.widget.TextView;
@@ -37,6 +44,7 @@ import com.localhost.lin.simploc.Utils.ImageUtils;
 import com.localhost.lin.simploc.Utils.JsonUtils;
 import com.localhost.lin.simploc.Utils.NetworkUtils;
 import com.localhost.lin.simploc.customview.MaskImage;
+import com.localhost.lin.simploc.customview.NoneScrollGridView;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.TextHttpResponseHandler;
@@ -52,8 +60,11 @@ import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.zip.Inflater;
 
 import cz.msebera.android.httpclient.Header;
+import cz.msebera.android.httpclient.client.HttpClient;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -68,6 +79,9 @@ public class MainActivity extends AppCompatActivity
     ListView gradeList;
     SQLiteOperation sqLiteOperation;
     UserEntity userInfo = null;
+    NoneScrollGridView courseTable,courseTableColumn,courseTableRow;
+    LinearLayout tableView;
+    TabHost tabHost;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,7 +113,7 @@ public class MainActivity extends AppCompatActivity
  //       final Button loginButton = (Button) findViewById(R.id.btn_login);
         threads = new NetworkThreads(handler);
 
-        TabHost tabHost = (TabHost)findViewById(R.id.tabHost);
+        tabHost = (TabHost)findViewById(R.id.tabHost);
         tabHost.setup();
         tabHost.addTab(tabHost.newTabSpec("tab1").setIndicator("柱状图显示").setContent(R.id.chartLayout));
         tabHost.addTab(tabHost.newTabSpec("tab2").setIndicator("表格显示").setContent(R.id.tabelLayout));
@@ -114,6 +128,7 @@ public class MainActivity extends AppCompatActivity
         resultWebview.loadUrl("file:///android_asset/welcome_page.html");
 
         gradeList = (ListView)findViewById(R.id.grade_listview);
+        tableView = (LinearLayout)findViewById(R.id.table_view);
 
         //View navHeader = View.inflate(navigationView.getContext(),R.layout.nav_header_main,null);
         View navHeader = navigationView.inflateHeaderView(R.layout.nav_header_main);
@@ -131,6 +146,7 @@ public class MainActivity extends AppCompatActivity
         //获取头像图片
         if (sqLiteOperation.queryIsShowAvator(userInfo.getNumber()))
             new AvatarGetTask(userInfo.getNumber(), userInfo.getCookie()).execute((Void)null);
+
     }
 
     private void loadMajorName(){
@@ -219,6 +235,9 @@ public class MainActivity extends AppCompatActivity
             intent.setClass(MainActivity.this,SelectTimeActivity.class);
             startActivityForResult(intent, CUSTOM_QUERY_REQUEST_CODE);
 
+        } else if (id == R.id.query_lesson) {
+            Log.d("Trigger","尝试连接...");
+            queryLesson();
         } else if (id == R.id.nav_share) {
             //resultWebview.loadUrl("file:///android_asset/wait_page.html");
             startActivityForResult(new Intent().setClass(MainActivity.this, SettingActivity.class), SETTING_REQUEST_CODE);
@@ -235,6 +254,60 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void queryLesson() {
+//        AsyncHttpClient networkManager = new AsyncHttpClient();
+//        RequestParams params = new RequestParams(new HashMap<String,String>(){
+//            {
+//                put("number",userInfo.getNumber());
+//                put("name",userInfo.getName());
+//                put("cookie",userInfo.getCookie());
+//                put("xn","2013-2014");
+//                put("xq","1");
+//            }
+//        });
+//        networkManager.get(NetworkUtils.TEST_LESSON_URL, params, new TextHttpResponseHandler() {
+//            @Override
+//            public void onStart() {
+//                super.onStart();
+//                setCharset("gb2312");
+//            }
+//
+//            @Override
+//            public void onFailure(int i, Header[] headers, String s, Throwable throwable) {
+//                Log.d("Fail~~",NetworkUtils.TEST_LESSON_URL);
+//            }
+//
+//            @Override
+//            public void onSuccess(int i, Header[] headers, String s) {
+//                Log.d("Success!!",userInfo.getNumber());
+//            }
+//        });
+        new Test().execute();
+    }
+    class Test extends AsyncTask<Void,Void,String>{
+
+        @Override
+        protected String doInBackground(Void... params) {
+            String reply = null;
+            CloseableHttpClient clients = HttpClients.createDefault();
+            HttpGetHC4 getHC4 = new HttpGetHC4(NetworkUtils.TEST_LESSON_URL + "?number=" + userInfo.getNumber()
+                    + "&name="+userInfo.getName() + "&cookie="+userInfo.getCookie() +
+                    "&xn="+"2013-2014"+"&xq="+"1");
+            try {
+                reply = EntityUtilsHC4.toString(clients.execute(getHC4).getEntity(),"gb2312");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return reply;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            //super.onPostExecute(s);
+            showCourseTable(s);
+        }
     }
 
     @Override
@@ -257,6 +330,7 @@ public class MainActivity extends AppCompatActivity
             }
         }else if(requestCode == CUSTOM_QUERY_REQUEST_CODE){//自定义查询成绩
             if(resultCode == RESULT_OK){
+                setViewVisable(VIEWS.GRADE_TAB);
                 resultWebview.loadUrl("file:///android_asset/wait_page.html");
                 new Thread(threads.new QueryGradeThread(data.getStringExtra("xn"),data.getStringExtra("xq"),sqLiteOperation)).start();
             }
@@ -323,6 +397,92 @@ public class MainActivity extends AppCompatActivity
         }
     };
 
+    private void showCourseTable(String jsonContent){
+        courseTable = (NoneScrollGridView)findViewById(R.id.lesson_table);
+        courseTableColumn = (NoneScrollGridView)findViewById(R.id.table_column);
+        courseTableRow = (NoneScrollGridView)findViewById(R.id.table_row);
+
+        String[] weekString = new String[]{"一","二","三","四","五","六","日"};
+        //设置列表头
+        ArrayList<Map<String,String>> colmunData = new ArrayList<Map<String, String>>();
+        for(int i = 0 ;i < 7;i++){
+            Map<String,String> map  = new HashMap<String,String>();
+            map.put("item","星期"+weekString[i]);
+            colmunData.add(map);
+        }
+        SimpleAdapter columnAdapter = new SimpleAdapter(MainActivity.this, colmunData, R.layout.course_table_column_item,
+                new String[]{"item"}, new int[]{R.id.column_item});
+        courseTableColumn.setAdapter(columnAdapter);
+
+        //设置行表头
+        ArrayList<Map<String,String>> rowData = new ArrayList<Map<String, String>>();
+        for(int i = 0 ;i < 6;i++) {
+            Map<String, String> map = new HashMap<String, String>();
+            map.put("item", "第" + String.valueOf(i*2 + 1) + "-" + String.valueOf(i*2 + 2) + "节");
+            rowData.add(map);
+        }
+        SimpleAdapter rowAdapter = new SimpleAdapter(MainActivity.this, rowData, R.layout.course_table_row_item,
+                new String[]{"item"}, new int[]{R.id.row_item});
+        courseTableRow.setAdapter(rowAdapter);
+
+        //设置表数据
+        ArrayList<Map<String,Object>> tableData = new ArrayList<Map<String, Object>>();
+//        for(Map.Entry<String,String> item:JsonUtils.convJson2Map(jsonContent,"GRADE").entrySet()){
+//            Map<String,Object> map  = new HashMap<String,Object>();
+//            map.put("item",item.getKey());        //在表格中添加一个Item，设置Item的文字
+//            map.put("back",R.color.colorPrimary);     //设置Item的背景
+//            tableData.add(map);
+//        }
+        ArrayList<String> rawData = new ArrayList<String>();
+        String[] lessonNumber = new String[]{"第1节","第3节","第5节","第7节","第9节","第11节"};
+        int maxlesson = JsonUtils.numOfNode(jsonContent);
+        for(int i =0;i<maxlesson;i++){
+            Log.d("Converting...",lessonNumber[i]);
+            rawData.addAll(JsonUtils.convJson2List(jsonContent, lessonNumber[i]));   //从json数据中获取节数相关的一周所有课程
+        }
+        for (String s:rawData){
+            Map<String,Object> map = new HashMap<String,Object>();
+            if(s.equals("?")){
+                map.put("item","");
+                map.put("back",R.color.colorTransparent);
+            }else {
+                map.put("item", s);                          //在表格中添加一个Item，设置Item的文字
+                map.put("back", R.color.colorPrimary);    //设置Item的背景
+            }
+            tableData.add(map);
+        }
+        SimpleAdapter tableAdapter = new SimpleAdapter(MainActivity.this,tableData,R.layout.course_table_item,
+                new String[]{"item","back"},new int[]{R.id.course_name,R.id.course_icon});
+        courseTable.setAdapter(tableAdapter);
+        courseTable.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Log.d("Clicking!!! --> ", String.valueOf(position));
+            }
+        });
+
+        setViewVisable(VIEWS.LESSON_TABLE);
+        //courseTable.setVisibility(View.VISIBLE);
+    }
+
+    private enum VIEWS{
+        LESSON_TABLE,
+        GRADE_TAB
+    }
+    private void setViewVisable(VIEWS view){
+        switch (view){
+            case LESSON_TABLE:
+                tabHost.setVisibility(View.GONE);
+                tableView.setVisibility(View.VISIBLE);
+                break;
+            case GRADE_TAB:
+                tableView.setVisibility(View.GONE);
+                tabHost.setVisibility(View.VISIBLE);
+                break;
+            default:break;
+        }
+    }
+
     /**
      * 用于与JS交互的接口对象
      */
@@ -336,7 +496,7 @@ public class MainActivity extends AppCompatActivity
         public String getJsonTest(){
             String ret = "";
 //            ret += "'";
-            ret += Test.jsMethodTest();
+//            ret += Test.jsMethodTest();
 //            ret += "'";
             return ret;
         }
@@ -404,28 +564,4 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-//    private class MajorGetTask extends AsyncTask<String,Void,String>{
-//        @Override
-//        protected String doInBackground(String... params) {
-//            String result = null,retData = null;
-//            CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
-//            HttpGetHC4 request = new HttpGetHC4(NetworkUtils.XN_OPTIONS_URL+"?number="+params[0]
-//                    +"&xm="+params[1] + "&cookie="+params[2]);
-//            try {
-//                result = EntityUtilsHC4.toString(closeableHttpClient.execute(request).getEntity(),"gb2312");
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//            System.out.print(result);
-//            retData = JsonUtils.getNodeString(result, "ZY");//获取专业信息
-//            return retData;
-//        }
-//
-//        @Override
-//        protected void onPostExecute(String s) {
-//            super.onPostExecute(s);
-//            nameText.setText(NetworkThreads.loginInfo.getXm() + "\t\t" + s);
-//
-//        }
-//    }
 }

@@ -2,10 +2,11 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/custom_margin"
+    android:paddingRight="@dimen/custom_margin"
+    android:paddingTop="@dimen/custom_margin"
+    android:paddingBottom="@dimen/custom_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior" tools:showIn="@layout/app_bar_main"
     tools:context=".MainActivity"
     android:id="@+id/main_content">
@@ -72,7 +73,7 @@
         <!--android:background="@color/colorLoginButton"-->
         <!--android:id="@+id/btn_login"/>-->
 
-
+    <!-- 成绩查询布局 -->
     <TabHost
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -137,4 +138,71 @@
             </FrameLayout>
         </LinearLayout>
     </TabHost>
+
+    <!--<GridView-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:visibility="gone" android:id="@+id/lesson_table"-->
+        <!--android:numColumns="5"-->
+        <!--android:columnWidth="90dp" android:verticalSpacing="5dp"-->
+        <!--android:horizontalSpacing="5dp" ></GridView>-->
+    <!-- -->
+
+    <!-- 课程表布局 -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:id="@+id/table_view"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="30dp"
+            android:text="课程表" android:gravity="center"
+            android:textSize="20sp"/>
+"       <com.localhost.lin.simploc.customview.NoneScrollGridView
+            android:layout_width="fill_parent" android:background="@color/colorLoginButton"
+            android:layout_height="20dp" android:numColumns="7"
+            android:id="@+id/table_column" android:paddingLeft="20dp" android:horizontalSpacing="3dp"
+            android:columnWidth="45dp" android:stretchMode="columnWidth"
+        ></com.localhost.lin.simploc.customview.NoneScrollGridView>
+
+        <ScrollView
+            android:layout_width="fill_parent"
+            android:layout_height="match_parent">
+            <RelativeLayout
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent">
+                <LinearLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content">
+                    <com.localhost.lin.simploc.customview.NoneScrollGridView
+                        android:layout_width="20dp"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/table_row" android:background="@color/colorLoginButton"
+                        android:numColumns="1" android:verticalSpacing="3dp"
+                        android:columnWidth="20dp" android:stretchMode="columnWidth"
+                        ></com.localhost.lin.simploc.customview.NoneScrollGridView>
+                    <com.localhost.lin.simploc.customview.NoneScrollGridView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/lesson_table"
+                        android:numColumns="7" android:verticalSpacing="3dp" android:horizontalSpacing="3dp"
+                        android:columnWidth="45dp" android:stretchMode="columnWidth">
+                    </com.localhost.lin.simploc.customview.NoneScrollGridView>
+                </LinearLayout>
+            </RelativeLayout>
+        </ScrollView>
+    </LinearLayout>
+
+
+    <!--<com.localhost.lin.simploc.customview.NoneScrollGridView-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:visibility="gone" android:id="@+id/lesson_table"-->
+        <!--android:numColumns="5"-->
+        <!--android:columnWidth="90dp" android:verticalSpacing="5dp"-->
+        <!--android:horizontalSpacing="5dp">-->
+    <!--</com.localhost.lin.simploc.customview.NoneScrollGridView>-->
 </RelativeLayout>

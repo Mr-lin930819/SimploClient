@@ -1,5 +1,7 @@
 package com.localhost.lin.simploc.Utils;
 
+import android.util.Log;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -64,5 +66,15 @@ public class JsonUtils {
             return null;
         }
         return retData;
+    }
+
+    public static int numOfNode(String json){
+        JSONObject jsonObject = null;
+        try{
+            jsonObject = new JSONObject(json);
+        } catch (JSONException e) {
+            return 0;
+        }
+        return jsonObject==null?0:jsonObject.length();
     }
 }

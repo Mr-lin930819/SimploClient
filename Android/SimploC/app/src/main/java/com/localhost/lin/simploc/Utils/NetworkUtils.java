@@ -13,4 +13,5 @@ public class NetworkUtils {
     public static final String TEST_AVATOR_URL           = TEST_HOST_URL + "/TouxiangTest";
     public static final String AVATOR_URL           = HOST_URL + "/GetAvatorServlet";
     public static final String XN_OPTIONS_URL  = HOST_URL + "/GradeOptionServlet";
+    public static final String TEST_LESSON_URL  =  TEST_HOST_URL +"/QueryCourseServlet";
 }
