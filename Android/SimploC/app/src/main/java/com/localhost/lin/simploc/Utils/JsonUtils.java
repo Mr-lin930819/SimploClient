@@ -55,6 +55,30 @@ public class JsonUtils {
         return data;
     }
 
+    public static ArrayList<ArrayList<String>> convJson2StringLists(String json){
+        JSONObject jsonObject = null;
+        ArrayList<ArrayList<String>> result = new ArrayList<>();
+        try {
+            jsonObject = new JSONObject(json);
+            Iterator<String> iterator = jsonObject.keys();
+            while (iterator.hasNext()){
+                String key = iterator.next();
+                JSONArray jsonArray = jsonObject.getJSONArray(key);
+                ArrayList<String> temp = new ArrayList<String>();
+                temp.add(key);
+                for(int i = 0; i < jsonArray.length(); i++){
+                    String data = jsonArray.getString(i);
+                    temp.add(data.equals("?") ? "" : data);
+                }
+                result.add(temp);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return null;
+        }
+        return result;
+    }
+
     public static String getNodeString(String json,String node){
         String retData = null;
         JSONObject jsonObject = null;

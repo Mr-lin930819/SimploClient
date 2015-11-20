@@ -3,7 +3,7 @@
 
     <group android:checkableBehavior="single">
         <item android:id="@+id/nav_camara" android:icon="@android:drawable/ic_menu_camera"
-            android:title="查询2012-2013成绩" />
+            android:title="查询考试信息" />
         <item android:id="@+id/nav_gallery" android:icon="@android:drawable/ic_menu_gallery"
             android:title="查询2013-2014成绩" />
         <item android:id="@+id/nav_slideshow" android:icon="@android:drawable/ic_menu_slideshow"
