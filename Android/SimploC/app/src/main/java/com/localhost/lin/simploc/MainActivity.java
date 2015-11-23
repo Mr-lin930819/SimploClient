@@ -1,5 +1,6 @@
 package com.localhost.lin.simploc;
 
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -85,7 +86,7 @@ public class MainActivity extends AppCompatActivity
     SQLiteOperation sqLiteOperation;
     UserEntity userInfo = null;
     NoneScrollGridView courseTable,courseTableColumn,courseTableRow;
-    LinearLayout tableView,mainInfoLayout;
+    LinearLayout tableView,mainInfoLayout,cetInfoLayout;
     TabHost tabHost;
 
     @Override
@@ -124,6 +125,7 @@ public class MainActivity extends AppCompatActivity
         gradeList = (ListView)findViewById(R.id.grade_listview);
         tableView = (LinearLayout)findViewById(R.id.table_view);
         mainInfoLayout = (LinearLayout)findViewById(R.id.main_info_layout);
+        cetInfoLayout = (LinearLayout)findViewById(R.id.cet_info_layout);
 
         initContentView();
 
@@ -217,11 +219,12 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }else if (id == R.id.action_exit) {
+        if (id == R.id.action_exit) {
             android.os.Process.killProcess(android.os.Process.myPid());
         }
+//        }else if (id == R.id.action_exit) {
+//            return true;
+//        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -232,18 +235,18 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camara) {
+        if (id == R.id.nav_exam) {
             // Handle the camera action
+            //查询考试信息
             loadOption(QUERY_CTRL.QUERY_EXAM);
-        } else if (id == R.id.nav_gallery) {
-            resultWebview.loadUrl("file:///android_asset/wait_page.html");
-            new Thread(threads.new QueryGradeThread("2013-2014", "",sqLiteOperation)).start();
-        } else if (id == R.id.nav_slideshow) {
-            resultWebview.loadUrl("file:///android_asset/wait_page.html");
-            new Thread(threads.new QueryGradeThread("2014-2015", "",sqLiteOperation)).start();
-        } else if (id == R.id.nav_manage) {
+        } else if (id == R.id.nav_cet) {
+            loadOption(QUERY_CTRL.QUERY_CET);
+//        } else if (id == R.id.nav_slideshow) {
+//            resultWebview.loadUrl("file:///android_asset/wait_page.html");
+//            new Thread(threads.new QueryGradeThread("2014-2015", "",sqLiteOperation)).start();
+        } else if (id == R.id.nav_grade) {
             Intent intent = new Intent();
-            intent.setClass(MainActivity.this,SelectTimeActivity.class);
+            intent.setClass(MainActivity.this, SelectTimeActivity.class);
             startActivityForResult(intent, CUSTOM_QUERY_REQUEST_CODE);
 
         } else if (id == R.id.query_lesson) {
@@ -251,7 +254,7 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_share) {
             //resultWebview.loadUrl("file:///android_asset/wait_page.html");
             startActivityForResult(new Intent().setClass(MainActivity.this, SettingActivity.class), SETTING_REQUEST_CODE);
-            overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.fade_out);
+            overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.fade_out);
         } else if (id == R.id.nav_send) {
             Intent intent = new Intent();
             intent.setClass(MainActivity.this,LoginActivity.class);
@@ -280,6 +283,12 @@ public class MainActivity extends AppCompatActivity
         final LinearLayout layout = (LinearLayout)getLayoutInflater().inflate(R.layout.dialog_select, null);
         final Spinner xnSpinner = (Spinner)layout.findViewById(R.id.dialog_xn_spinner);
         final Spinner xqSpinner = (Spinner)layout.findViewById(R.id.dialog_xq_spinner);
+
+        if(func.equals(QUERY_CTRL.QUERY_CET)){
+            queryCET();
+            return;
+        }
+
         AsyncHttpClient httpClient = new AsyncHttpClient();
         RequestParams params = new RequestParams(new HashMap<String,String>(){
             {
@@ -293,7 +302,7 @@ public class MainActivity extends AppCompatActivity
         httpClient.get(NetworkUtils.XN_OPTIONS_URL, params, new TextHttpResponseHandler() {
             @Override
             public void onFailure(int i, cz.msebera.android.httpclient.Header[] headers, String s, Throwable throwable) {
-                Toast.makeText(MainActivity.this, "网络出错", Toast.LENGTH_LONG);
+                Toast.makeText(MainActivity.this, "网络出错", Toast.LENGTH_LONG).show();
             }
 
             @Override
@@ -349,6 +358,7 @@ public class MainActivity extends AppCompatActivity
      * @param xq    要查询的学期
      */
     private void queryLesson(final String xn, final String xq) {
+        final ProgressDialog dialog = ProgressDialog.show(MainActivity.this, "课程表", "查询中... ...");
         AsyncHttpClient networkManager = new AsyncHttpClient();
         RequestParams params = new RequestParams(new HashMap<String,String>(){
             {
@@ -374,6 +384,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onSuccess(int i, Header[] headers, String s) {
                 Log.d("Success!!", userInfo.getNumber());
+                dialog.dismiss();
                 showCourseTable(s);
             }
         });
@@ -385,6 +396,7 @@ public class MainActivity extends AppCompatActivity
      * @param xq    查询的学期
      */
     private void queryExam(final String xn,final String xq){
+        final ProgressDialog dialog = ProgressDialog.show(MainActivity.this,"考试信息","查询中... ...");
         AsyncHttpClient networkManager = new AsyncHttpClient();
         RequestParams params = new RequestParams(new HashMap<String,String>(){
             {
@@ -410,6 +422,40 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onSuccess(int i, Header[] headers, String s) {
                 showExamTimeTable(s);
+                dialog.dismiss();
+            }
+        });
+    }
+
+    /**
+     * 查询等级信息的网络请求
+     */
+    private void queryCET(){
+        final ProgressDialog dialog = ProgressDialog.show(MainActivity.this,"等级考试信息","查询中... ...");
+        AsyncHttpClient networkManager = new AsyncHttpClient();
+        RequestParams params = new RequestParams(new HashMap<String,String>(){
+            {
+                put("number",userInfo.getNumber());
+                put("name",userInfo.getName());
+                put("cookie",userInfo.getCookie());
+            }
+        });
+        networkManager.get(NetworkUtils.CET_URL, params, new TextHttpResponseHandler() {
+            @Override
+            public void onStart() {
+                super.onStart();
+                setCharset("gb2312");
+            }
+
+            @Override
+            public void onFailure(int i, Header[] headers, String s, Throwable throwable) {
+                Log.d("Fail~~", NetworkUtils.EXAM_URL);
+            }
+
+            @Override
+            public void onSuccess(int i, Header[] headers, String s) {
+                showCETTable(s);
+                dialog.dismiss();
             }
         });
     }
@@ -509,28 +555,56 @@ public class MainActivity extends AppCompatActivity
         setViewVisable(VIEWS.MAIN_INFO);
     }
 
+    private void showCETTable(String jsonContent){
+        ListView cetList = (ListView)findViewById(R.id.cet_info_list);
+        ArrayList<ArrayList<String>> rawData = JsonUtils.convJson2StringLists(jsonContent);
+        ArrayList<Map<String,String>> listData = new ArrayList<Map<String, String>>();//List表格数据
+
+        for(ArrayList<String> itemData:rawData){
+            Map<String,String> map = new HashMap<>();
+            for (String s: itemData){
+                map.put("item" + String.valueOf(itemData.indexOf(s) + 1), s);
+            }
+            listData.add(map);
+        }
+        SimpleAdapter cetAdapter = new SimpleAdapter(MainActivity.this,listData,R.layout.cet_list_item,
+                new String[]{"item2","item3","item6","item4","item5","item7"},
+                new int[]{R.id.xn_cet,R.id.xq_cet,R.id.date_cet,R.id.name_cet,R.id.number_cet,R.id.grade_cet});
+        cetList.setAdapter(cetAdapter);
+        setViewVisable(VIEWS.CET_LIST);
+    }
+
     private enum VIEWS{
         LESSON_TABLE,
         GRADE_TAB,
-        MAIN_INFO
+        MAIN_INFO,
+        CET_LIST
     }
     private void setViewVisable(VIEWS view){
         switch (view){
             case LESSON_TABLE:
                 tabHost.setVisibility(View.GONE);
                 mainInfoLayout.setVisibility(View.GONE);
+                cetInfoLayout.setVisibility(View.GONE);
                 tableView.setVisibility(View.VISIBLE);
                 break;
             case GRADE_TAB:
                 tableView.setVisibility(View.GONE);
                 mainInfoLayout.setVisibility(View.GONE);
+                cetInfoLayout.setVisibility(View.GONE);
                 tabHost.setVisibility(View.VISIBLE);
                 break;
             case MAIN_INFO:
                 tabHost.setVisibility(View.GONE);
                 tableView.setVisibility(View.GONE);
+                cetInfoLayout.setVisibility(View.GONE);
                 mainInfoLayout.setVisibility(View.VISIBLE);
                 break;
+            case CET_LIST:
+                tabHost.setVisibility(View.GONE);
+                mainInfoLayout.setVisibility(View.GONE);
+                tableView.setVisibility(View.GONE);
+                cetInfoLayout.setVisibility(View.VISIBLE);
             default:break;
         }
     }
@@ -544,14 +618,14 @@ public class MainActivity extends AppCompatActivity
             return resultJson;
         }
 
-        @JavascriptInterface
-        public String getJsonTest(){
-            String ret = "";
-//            ret += "'";
-//            ret += Test.jsMethodTest();
-//            ret += "'";
-            return ret;
-        }
+//        @JavascriptInterface
+//        public String getJsonTest(){
+//            String ret = "";
+////            ret += "'";
+////            ret += Test.jsMethodTest();
+////            ret += "'";
+//            return ret;
+//        }
     }
 
     final class MyWebChromeClient extends WebChromeClient {
@@ -563,6 +637,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    //后台获取头像照片的任务
     private class AvatarGetTask extends AsyncTask<Void,Void,Bitmap>{
         private String mNumber;
         private String mCookie;

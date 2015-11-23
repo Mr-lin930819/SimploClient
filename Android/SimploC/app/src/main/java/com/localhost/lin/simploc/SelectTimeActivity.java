@@ -6,6 +6,7 @@ import android.os.AsyncTask;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Adapter;
@@ -95,6 +96,7 @@ public class SelectTimeActivity extends AppCompatActivity {
             @Override
             public void onSuccess(int i, cz.msebera.android.httpclient.Header[] headers, String s) {
                 ArrayList<String> retData = JsonUtils.convJson2List(s, "CXTJ");
+                Log.d("convert",retData.get(0));
                 ArrayAdapter xnAdapter = new ArrayAdapter<>(SelectTimeActivity.this,
                         android.R.layout.simple_spinner_item,retData);
                 xnAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);

@@ -22,16 +22,16 @@
             </LinearLayout>
 
         </TableRow>
-        <TableRow android:paddingBottom="20dp" android:layout_width="match_parent" >
-            <Button android:text="Test" android:background="@color/colorWhite"
-                android:width="360dp">
-            </Button>
-        </TableRow >
-        <TableRow android:paddingBottom="10dp" android:layout_width="match_parent">
-            <Button android:text="Test" android:background="@color/colorWhite"
-                android:width="360dp">
-            </Button>
-        </TableRow>
+        <!--<TableRow android:paddingBottom="20dp" android:layout_width="match_parent" >-->
+            <!--<Button android:text="Test" android:background="@color/colorWhite"-->
+                <!--android:width="360dp">-->
+            <!--</Button>-->
+        <!--</TableRow >-->
+        <!--<TableRow android:paddingBottom="10dp" android:layout_width="match_parent">-->
+            <!--<Button android:text="Test" android:background="@color/colorWhite"-->
+                <!--android:width="360dp">-->
+            <!--</Button>-->
+        <!--</TableRow>-->
 
     </TableLayout>
 

@@ -2,21 +2,19 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <group android:checkableBehavior="single">
-        <item android:id="@+id/nav_camara" android:icon="@android:drawable/ic_menu_camera"
+        <item android:id="@+id/nav_exam" android:icon="@android:drawable/ic_menu_edit"
             android:title="查询考试信息" />
-        <item android:id="@+id/nav_gallery" android:icon="@android:drawable/ic_menu_gallery"
-            android:title="查询2013-2014成绩" />
-        <item android:id="@+id/nav_slideshow" android:icon="@android:drawable/ic_menu_slideshow"
-            android:title="查询2014-2015成绩" />
-        <item android:id="@+id/nav_manage" android:icon="@android:drawable/ic_menu_manage"
-            android:title="自选查询" />
+        <item android:id="@+id/nav_cet" android:icon="@android:drawable/ic_menu_recent_history"
+            android:title="查询等级考试信息" />
+        <item android:id="@+id/nav_grade" android:icon="@android:drawable/ic_menu_directions"
+            android:title="查询成绩" />
         <item android:id="@+id/query_lesson" android:icon="@android:drawable/ic_menu_agenda"
             android:title="查询课表"/>
     </group>
 
     <item android:title="系统功能">
         <menu>
-            <item android:id="@+id/nav_share" android:icon="@android:drawable/ic_menu_share"
+            <item android:id="@+id/nav_share" android:icon="@android:drawable/ic_menu_manage"
                 android:title="设置" />
             <item android:id="@+id/nav_send" android:icon="@android:drawable/ic_lock_power_off"
                 android:title="登出" />
