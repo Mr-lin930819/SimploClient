@@ -9,5 +9,8 @@
     <color name="colorWhite">#ffffff</color>
     <color name="colorRed">#ff0000</color>
     <color name="colorDeleteButtonPressed">#B0171F</color>
+    <color name="colorTableHeaderBack">#FF3030</color>
+
     <color name="colorTransparent">#00000000</color>
+
 </resources>
