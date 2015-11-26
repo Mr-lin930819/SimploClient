@@ -46,6 +46,7 @@ import android.widget.Toast;
 import com.localhost.lin.simploc.Entity.UserEntity;
 import com.localhost.lin.simploc.Entity.UserInfo;
 import com.localhost.lin.simploc.SQLite.SQLiteOperation;
+import com.localhost.lin.simploc.TestUnit.TestNetwork;
 import com.localhost.lin.simploc.Utils.ImageUtils;
 import com.localhost.lin.simploc.Utils.JsonUtils;
 import com.localhost.lin.simploc.Utils.NetworkUtils;
@@ -69,6 +70,8 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.Inflater;
 
 import cz.msebera.android.httpclient.Header;
@@ -94,12 +97,11 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
         sqLiteOperation = new SQLiteOperation(this);
+        setContentView(R.layout.activity_main);
         //载入已登录的用户信息，此处学号获取采用静态全局变量的方式，更好的方式是采用意图Intent
         userInfo = sqLiteOperation.findUser(NetworkThreads.loginInfo.getNumber());
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setSubtitle("测试");
         setSupportActionBar(toolbar);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -379,8 +381,17 @@ public class MainActivity extends AppCompatActivity
      * @param week  要查询的周数[附加功能]
      */
     private void queryLesson(final String xn, final String xq,final String week) {
-        //TODO 添加周数限制，剩余功能需要在Server实现
         final ProgressDialog dialog = ProgressDialog.show(MainActivity.this, "课程表", "查询中... ...");
+
+        //测试
+        if(false) {
+            TestNetwork testNetwork = new TestNetwork(NetworkUtils.TEST_LESSON_URL,"?number=" + userInfo.getNumber() + "&name=" + userInfo.getName() + "&cookie=" +
+                    userInfo.getCookie() + "&xn=" + xn + "&xq=" + xq);
+            new Thread(testNetwork).start();
+            dialog.dismiss();
+            return;
+        }
+
         AsyncHttpClient networkManager = new AsyncHttpClient();
         RequestParams params = new RequestParams(new HashMap<String,String>(){
             {
@@ -392,7 +403,7 @@ public class MainActivity extends AppCompatActivity
                 put("week",week);
             }
         });
-        networkManager.get(NetworkUtils.LESSON_URL, params, new TextHttpResponseHandler() {
+        networkManager.get(NetworkUtils.TEST_LESSON_URL, params, new TextHttpResponseHandler() {
             @Override
             public void onStart() {
                 super.onStart();
@@ -408,7 +419,7 @@ public class MainActivity extends AppCompatActivity
             public void onSuccess(int i, Header[] headers, String s) {
                 Log.d("Success!!", userInfo.getNumber());
                 dialog.dismiss();
-                showCourseTable(s);
+                showCourseTable(s, Integer.parseInt(week));
             }
         });
     }
@@ -487,8 +498,10 @@ public class MainActivity extends AppCompatActivity
      * 根据Json内容显示课程表信息到课程表视图中
      * @param jsonContent 传入的Json数据
      */
-    private void showCourseTable(String jsonContent){
+    private void showCourseTable(String jsonContent,int week){
         String nowWeek = new SimpleDateFormat("EEEE",Locale.CHINA).format(new java.util.Date());
+
+        //TODO 尝试修改课程表布局为HorizonScrollView嵌套GridView
         courseTable = (NoneScrollGridView)findViewById(R.id.lesson_table);
         courseTableColumn = (NoneScrollGridView)findViewById(R.id.table_column);
         courseTableRow = (NoneScrollGridView)findViewById(R.id.table_row);
@@ -502,6 +515,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         getSupportActionBar().setTitle("课程表");
+        getSupportActionBar().setSubtitle(new SimpleDateFormat("yyyyMMdd",Locale.CHINA).format(new java.util.Date()));
         //设置列表头
         ArrayList<Map<String,Object>> colmunData = new ArrayList<Map<String, Object>>();
         for(int i = 0 ;i < 7;i++){
@@ -545,19 +559,52 @@ public class MainActivity extends AppCompatActivity
         }
         for (String s:rawData){
             Map<String,Object> map = new HashMap<String,Object>();
-            if(s.equals("?")){
+            //如果这个时间没课
+            if(s.equals("")){
                 map.put("item","");
                 map.put("back",R.color.colorTransparent);
                 textData.add(new String[]{});
-            }else {
-                String[] ss = s.split(" ");
-                if(ss.length < 5)
-                    map.put("item", ss[0] + "\n" +ss[3]);
-                else
-                   map.put("item", ss[0] + "\n" +ss[3]+ "\n" +ss[4]);                          //在表格中添加一个Item，设置Item的文字
+            }else {     //有课则进行解析，格式为【 周数1;课程名1;教师1;教室1$周数2;课程名2;教师2;教室2$... ... 】,周数格式为"单/双周"或"n-m周".
+                String[] ss = s.split("$"),detailText = new String[]{};
+                StringBuffer showText = new StringBuffer();
+                Pattern pattern = Pattern.compile(".{1,2}-.{1,2}周");
+                for(String item:ss){
+                    String []conts = item.split(";");
+                    Matcher matcher = pattern.matcher(conts[0]);
+                    if(matcher.find()){
+                        int min,max;
+                        min = Integer.parseInt(matcher.group(1));
+                        max = Integer.parseInt(matcher.group(2));
+                        //如果选择的周数在课程周数范围内（非单双周课程)
+                        if(min < week && week <max){
+                            showText.append(conts[1] + "\n");
+                            showText.append(conts[2] + "\n");
+                            showText.append(conts[3] + "\n");
+                            detailText = conts;
+                            break;
+                        } else {
+                            continue;
+                        }
+                    } else {
+                        //单双周的情况
+                        matcher = Pattern.compile("(.)周").matcher(conts[0]);
+                        if(matcher.find()) {
+                            if( (matcher.group(1).equals("单") && week % 2 == 1) ||
+                                    (matcher.group(1).equals("双") && week % 2 == 0)) {
+                                showText.append(conts[1] + "\n");
+                                showText.append(conts[2] + "\n");
+                                showText.append(conts[3] + "\n");
+                                detailText = conts;
+                                break;
+                            }
+                        }
+                    }
+                }
+                //在表格中添加一个Item，设置Item的文字
                 //map.put("back", R.color.colorPrimary);    //设置Item的背景
-                textData.add(ss);
-                map.put("back",R.drawable.class_cell_4);
+                map.put("item",showText);
+                textData.add(detailText);
+                map.put("back", R.drawable.class_cell_4);
             }
             tableData.add(map);
         }
@@ -570,10 +617,10 @@ public class MainActivity extends AppCompatActivity
 
                 String[] showData = textData.get(position);
                 View v = (View)getLayoutInflater().inflate(R.layout.course_table_detail,null);
-                ((TextView)v.findViewById(R.id.course_table_detail_name)).setText("课程：\t" + showData[0]);
-                ((TextView)v.findViewById(R.id.course_table_detail_teacher)).setText("教师：\t" + showData[3]);
+                ((TextView)v.findViewById(R.id.course_table_detail_name)).setText("课程：\t" + showData[1]);
+                ((TextView)v.findViewById(R.id.course_table_detail_teacher)).setText("教师：\t" + showData[2]);
                 if(showData.length >= 5)
-                    ((TextView)v.findViewById(R.id.course_table_detail_addr)).setText("教室：\t" + showData[4]);
+                    ((TextView)v.findViewById(R.id.course_table_detail_addr)).setText("教室：\t" + showData[3]);
                 new AlertDialog.Builder(MainActivity.this).setTitle("课程详情").setView(v).show();
             }
         });
@@ -590,7 +637,8 @@ public class MainActivity extends AppCompatActivity
         examList = (ListView)findViewById(R.id.main_info_list);
         ArrayList<ArrayList<String>> rawData = JsonUtils.convJson2StringLists(jsonContent);
         ArrayList<Map<String,String>> listData = new ArrayList<Map<String, String>>();//List表格数据
-
+        getSupportActionBar().setTitle("考试时间表");
+        getSupportActionBar().setSubtitle(new SimpleDateFormat("yyyyMMdd",Locale.CHINA).format(new java.util.Date()));
         for(ArrayList<String> itemData:rawData){
             Map<String,String> map = new HashMap<>();
             for (String s: itemData){
@@ -609,6 +657,8 @@ public class MainActivity extends AppCompatActivity
         ListView cetList = (ListView)findViewById(R.id.cet_info_list);
         ArrayList<ArrayList<String>> rawData = JsonUtils.convJson2StringLists(jsonContent);
         ArrayList<Map<String,String>> listData = new ArrayList<Map<String, String>>();//List表格数据
+        getSupportActionBar().setTitle("课程表");
+        getSupportActionBar().setSubtitle("");
 
         for(ArrayList<String> itemData:rawData){
             Map<String,String> map = new HashMap<>();
@@ -762,6 +812,7 @@ public class MainActivity extends AppCompatActivity
         }else if(requestCode == CUSTOM_QUERY_REQUEST_CODE){//自定义查询成绩
             if(resultCode == RESULT_OK){
                 setViewVisable(VIEWS.GRADE_TAB);
+                getSupportActionBar().setTitle("成绩单");
                 resultWebview.loadUrl("file:///android_asset/wait_page.html");
                 new Thread(threads.new QueryGradeThread(data.getStringExtra("xn"),data.getStringExtra("xq"),sqLiteOperation)).start();
             }
