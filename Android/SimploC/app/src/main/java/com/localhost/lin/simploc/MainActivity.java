@@ -355,7 +355,7 @@ public class MainActivity extends AppCompatActivity
                                     case QUERY_LESSON:
                                         queryLesson(xnSpinner.getSelectedItem().toString(),
                                                 String.valueOf(xqSpinner.getSelectedItemPosition()),
-                                                String.valueOf(weekSpinner.getSelectedItemPosition()));
+                                                String.valueOf(weekSpinner.getSelectedItemPosition() + 1));
                                         break;
                                     case QUERY_EXAM:
                                         queryExam(xnSpinner.getSelectedItem().toString(),
@@ -403,7 +403,7 @@ public class MainActivity extends AppCompatActivity
                 put("week",week);
             }
         });
-        networkManager.get(NetworkUtils.TEST_LESSON_URL, params, new TextHttpResponseHandler() {
+        networkManager.get(NetworkUtils.LESSON_URL, params, new TextHttpResponseHandler() {
             @Override
             public void onStart() {
                 super.onStart();
@@ -501,7 +501,6 @@ public class MainActivity extends AppCompatActivity
     private void showCourseTable(String jsonContent,int week){
         String nowWeek = new SimpleDateFormat("EEEE",Locale.CHINA).format(new java.util.Date());
 
-        //TODO 尝试修改课程表布局为HorizonScrollView嵌套GridView
         courseTable = (NoneScrollGridView)findViewById(R.id.lesson_table);
         courseTableColumn = (NoneScrollGridView)findViewById(R.id.table_column);
         courseTableRow = (NoneScrollGridView)findViewById(R.id.table_row);
@@ -554,9 +553,11 @@ public class MainActivity extends AppCompatActivity
         String[] lessonNumber = new String[]{"第1节","第3节","第5节","第7节","第9节","第11节"};
         int maxlesson = JsonUtils.numOfNode(jsonContent);
         for(int i =0;i<maxlesson;i++){
-            Log.d("Converting...",lessonNumber[i]);
+//            Log.d("Converting...",lessonNumber[i]);
             rawData.addAll(JsonUtils.convJson2List(jsonContent, lessonNumber[i]));   //从json数据中获取节数相关的一周所有课程
         }
+
+        System.out.print(rawData.toString());
         for (String s:rawData){
             Map<String,Object> map = new HashMap<String,Object>();
             //如果这个时间没课
@@ -565,21 +566,30 @@ public class MainActivity extends AppCompatActivity
                 map.put("back",R.color.colorTransparent);
                 textData.add(new String[]{});
             }else {     //有课则进行解析，格式为【 周数1;课程名1;教师1;教室1$周数2;课程名2;教师2;教室2$... ... 】,周数格式为"单/双周"或"n-m周".
-                String[] ss = s.split("$"),detailText = new String[]{};
+                String[] ss,detailText = new String[]{};
+                //TODO 标记，此处split使用$符号做划分，但是$又为正则表达式元符号，所以需要转义
+                ss = s.split("\\$");
+                for(int i = 0; i < ss.length; i++) {
+                    Log.d("Raw..",ss[i]);
+                }
                 StringBuffer showText = new StringBuffer();
-                Pattern pattern = Pattern.compile(".{1,2}-.{1,2}周");
+                Pattern pattern = Pattern.compile("([0-9]{1,2})-([0-9]{1,2})周");
                 for(String item:ss){
                     String []conts = item.split(";");
+//                    Log.d("Content",conts[0]+"," +conts[1]+","+conts[2]+","+conts[3]);
                     Matcher matcher = pattern.matcher(conts[0]);
                     if(matcher.find()){
-                        int min,max;
+                        int min = 1,max = 18;
                         min = Integer.parseInt(matcher.group(1));
                         max = Integer.parseInt(matcher.group(2));
                         //如果选择的周数在课程周数范围内（非单双周课程)
-                        if(min < week && week <max){
+                        if(min <= week && week <=max){
                             showText.append(conts[1] + "\n");
                             showText.append(conts[2] + "\n");
-                            showText.append(conts[3] + "\n");
+                            if(conts.length < 4)
+                                showText.append("\n");
+                            else
+                                showText.append(conts[3] + "\n");
                             detailText = conts;
                             break;
                         } else {
@@ -600,11 +610,18 @@ public class MainActivity extends AppCompatActivity
                         }
                     }
                 }
-                //在表格中添加一个Item，设置Item的文字
-                //map.put("back", R.color.colorPrimary);    //设置Item的背景
-                map.put("item",showText);
-                textData.add(detailText);
-                map.put("back", R.drawable.class_cell_4);
+                if(!showText.toString().equals("")) {
+                    //在表格中添加一个Item，设置Item的文字
+                    Log.d("Adding...","");
+                    //map.put("back", R.color.colorPrimary);    //设置Item的背景
+                    map.put("item", showText);
+                    textData.add(detailText);
+                    map.put("back", R.drawable.class_cell_4);
+                }else{
+                    map.put("item","");
+                    map.put("back",R.color.colorTransparent);
+                    textData.add(new String[]{});
+                }
             }
             tableData.add(map);
         }
@@ -614,12 +631,13 @@ public class MainActivity extends AppCompatActivity
         courseTable.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
                 String[] showData = textData.get(position);
+                if(showData.length == 0)
+                    return;
                 View v = (View)getLayoutInflater().inflate(R.layout.course_table_detail,null);
                 ((TextView)v.findViewById(R.id.course_table_detail_name)).setText("课程：\t" + showData[1]);
                 ((TextView)v.findViewById(R.id.course_table_detail_teacher)).setText("教师：\t" + showData[2]);
-                if(showData.length >= 5)
+                //if(showData.length >= 5)
                     ((TextView)v.findViewById(R.id.course_table_detail_addr)).setText("教室：\t" + showData[3]);
                 new AlertDialog.Builder(MainActivity.this).setTitle("课程详情").setView(v).show();
             }
