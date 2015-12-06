@@ -219,7 +219,20 @@ public class MainActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_exit) {
-            android.os.Process.killProcess(android.os.Process.myPid());
+            new AlertDialog.Builder(MainActivity.this)
+                    .setTitle("退出应用").setMessage("确定退出吗？")
+                    .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            android.os.Process.killProcess(android.os.Process.myPid());
+                        }
+                    }).setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    }).show();
+
         }
 //        }else if (id == R.id.action_exit) {
 //            return true;
@@ -508,7 +521,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         getSupportActionBar().setTitle("课程表");
-        getSupportActionBar().setSubtitle(new SimpleDateFormat("yyyyMMdd",Locale.CHINA).format(new java.util.Date()));
+        getSupportActionBar().setSubtitle(new SimpleDateFormat("yyyyMMdd", Locale.CHINA).format(new java.util.Date()));
         //设置列表头
         ArrayList<Map<String,Object>> colmunData = new ArrayList<Map<String, Object>>();
         for(int i = 0 ;i < 7;i++){
