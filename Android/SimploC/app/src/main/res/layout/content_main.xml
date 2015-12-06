@@ -189,6 +189,34 @@
 
     </LinearLayout>
 
+
+    <!-- TODO 尝试测试修改布局嵌套方式 -->
+    <!--<LinearLayout-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:id="@+id/table_view"-->
+        <!--android:visibility="gone" android:orientation="vertical">-->
+    <!--<TextView-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="@dimen/title_height"-->
+        <!--android:text="考试信息" android:textSize="@dimen/table_title_text_size"-->
+        <!--android:gravity="center"/>-->
+    <!--<HorizontalScrollView-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent">-->
+        <!--<LinearLayout-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:orientation="vertical">-->
+
+            <!--<GridView-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="match_parent"-->
+                <!--android:id="@+id/lesson_table" android:numColumns="7"/>-->
+        <!--</LinearLayout>-->
+    <!--</HorizontalScrollView>-->
+    <!--</LinearLayout>-->
+
     <!-- 列表布局，用于显示考试信息 -->
     <LinearLayout
         android:layout_width="match_parent"
