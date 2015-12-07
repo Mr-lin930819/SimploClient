@@ -1,5 +1,6 @@
 package com.localhost.lin.simploc;
 
+import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -12,7 +13,9 @@ import android.os.Looper;
 import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
@@ -25,6 +28,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewGroup;
 import android.webkit.JavascriptInterface;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
@@ -93,7 +97,7 @@ public class MainActivity extends AppCompatActivity
 
     //采用Fragment替代TabHost
     private ViewPager mViewPager;
-    private FragmentPagerAdapter mPageAdapter;
+    private FragmentStatePagerAdapter mPageAdapter;
     private List<android.support.v4.app.Fragment> mFragments = new ArrayList<android.support.v4.app.Fragment>();
     private TabPageIndicator tabPageIndicator;
 
@@ -134,26 +138,12 @@ public class MainActivity extends AppCompatActivity
 
         //resultWebview = (WebView) findViewById(R.id.result_web_view);
 
-        gradeList = (ListView)findViewById(R.id.grade_listview);
+        //gradeList = (ListView)findViewById(R.id.grade_listview);
         tableView = (LinearLayout)findViewById(R.id.table_view);
         mainInfoLayout = (LinearLayout)findViewById(R.id.main_info_layout);
         cetInfoLayout = (LinearLayout)findViewById(R.id.cet_info_layout);
 
         initContentView();
-//        mPageAdapter = new FragmentPagerAdapter(getSupportFragmentManager()) {
-//            @Override
-//            public android.support.v4.app.Fragment getItem(int position) {
-//                return mFragments.get(position);
-//            }
-//
-//            @Override
-//            public int getCount() {
-//                return mFragments.size();
-//            }
-//        };
-//        mViewPager.setAdapter(mPageAdapter);
-//        tabPageIndicator.setViewPager(mViewPager);
-//        tabPageIndicator.setCurrentItem(0);
 
         /**
          * 生成左边抽屉框的展示数据
@@ -174,18 +164,24 @@ public class MainActivity extends AppCompatActivity
     }
 
     void initContentView(){
-//        tabHost.setup();
-//        tabHost.addTab(tabHost.newTabSpec("tab1").setIndicator("柱状图显示").setContent(R.id.chartLayout));
-//        tabHost.addTab(tabHost.newTabSpec("tab2").setIndicator("表格显示").setContent(R.id.tabelLayout));
+        mPageAdapter = new FragmentStatePagerAdapter(getSupportFragmentManager()) {
+            final private String[] titleText = new String[]{"柱状图显示","列表显示"};
+            @Override
+            public android.support.v4.app.Fragment getItem(int position) {
+                return mFragments.get(position);
+            }
 
+            @Override
+            public int getCount() {
+                return mFragments.size();
+            }
 
-//        resultWebview.setWebChromeClient(new MyWebChromeClient());
-//        resultWebview.getSettings().setJavaScriptEnabled(true);
-//        resultWebview.getSettings().setSupportZoom(true);
-//        //扩大比例的缩放
-//        resultWebview.getSettings().setUseWideViewPort(true);
-//        resultWebview.addJavascriptInterface(new JsObject(), "jsObject");
-//        resultWebview.loadUrl("file:///android_asset/welcome_page.html");
+            @Override
+            public CharSequence getPageTitle(int position) {
+                return titleText[position % 2];
+            }
+
+        };
     }
 
     /**
@@ -923,56 +919,19 @@ public class MainActivity extends AppCompatActivity
 
                 resultJson = msg.getData().getString("json");
                 Log.d("LLAALLAA", resultJson);
-//                resultWebview.setWebChromeClient(new MyWebChromeClient());
-//                resultWebview.getSettings().setJavaScriptEnabled(true);
-//                resultWebview.addJavascriptInterface(new JsObject(), "jsObject");
-//
-//                resultWebview.loadUrl("file:///android_asset/result_page.html");
-                GradeChartTab gradeChartTab = new GradeChartTab();
+                GradeChartTab gradeChartTab =GradeChartTab.newInstance(0);
                 GradeListTab gradeListTab = new GradeListTab();
                 Bundle bundle = new Bundle();
-
-                bundle.putString("jsonResult",resultJson);
+                bundle.putString("jsonResult", resultJson);
                 gradeChartTab.setArguments(bundle);
                 gradeListTab.setArguments(bundle);
-
+                mFragments.clear();
                 mFragments.add(gradeChartTab);
                 mFragments.add(gradeListTab);
-                mPageAdapter = new FragmentPagerAdapter(getSupportFragmentManager()) {
-                    final private String[] titleText = new String[]{"柱状图显示","列表显示"};
-                    @Override
-                    public android.support.v4.app.Fragment getItem(int position) {
-                        return mFragments.get(position);
-                    }
-
-                    @Override
-                    public int getCount() {
-                        return mFragments.size();
-                    }
-
-                    @Override
-                    public CharSequence getPageTitle(int position) {
-                        return titleText[position % 2];
-                    }
-                };
                 mViewPager.setAdapter(mPageAdapter);
                 tabPageIndicator.setVisibility(View.VISIBLE);
                 tabPageIndicator.setViewPager(mViewPager, 0);
-                //tabPageIndicator.setVisibility(View.VISIBLE);
                 progressDialog.dismiss();
-
-                //添加列表数据
-//                ArrayList<Map<String,String>> data = new ArrayList<Map<String, String>>();
-//                for(Map.Entry<String,String> item:JsonUtils.convJson2Map(resultJson,"GRADE").entrySet()){
-//                    Map<String,String> map  = new HashMap<String,String>();
-//                    Log.d("MainActivity 253:",item.getKey() +"," + item.getValue());
-//                    map.put("item",item.getKey());
-//                    map.put("value",item.getValue());
-//                    data.add(map);
-//                }
-//                SimpleAdapter adapter = new SimpleAdapter(MainActivity.this,data,R.layout.grade_list_item,
-//                        new String[]{"item","value"},new int[]{R.id.grade_item,R.id.grade_value});
-//                gradeList.setAdapter(adapter);
             }
         }
     };

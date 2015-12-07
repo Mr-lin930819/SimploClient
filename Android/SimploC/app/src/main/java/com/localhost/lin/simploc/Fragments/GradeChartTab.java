@@ -34,6 +34,13 @@ public class GradeChartTab extends android.support.v4.app.Fragment{
         resultWebview.loadUrl("file:///android_asset/result_page.html");
         return view;
     }
+    public static GradeChartTab newInstance(int index) {
+        GradeChartTab f = new GradeChartTab();
+        Bundle args = new Bundle();
+        args.putInt("index", index);
+        f.setArguments(args);
+        return f;
+    }
 
     final class MyWebChromeClient extends WebChromeClient {
         @Override
