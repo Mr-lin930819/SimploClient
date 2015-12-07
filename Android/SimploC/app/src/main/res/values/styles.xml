@@ -5,7 +5,7 @@
         <item name="colorPrimary">@color/colorBluePrimary</item>
         <item name="colorPrimaryDark">@color/colorBluePrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-        <item name="nav_header_back">@drawable/side_nav_bar</item>
+        <item name="nav_header_back">@drawable/side_nav_bar_1</item>
     </style>
 
     <style name="GreenAppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
