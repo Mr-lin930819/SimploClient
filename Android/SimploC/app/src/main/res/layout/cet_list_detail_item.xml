@@ -5,17 +5,26 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content" style="@style/MyTextAppearance.ListItem"
-        android:id="@+id/course_table_detail_name"/>
+        android:id="@+id/cet_list_detail_name"/>
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content" style="@style/MyTextAppearance.ListItem"
-        android:id="@+id/course_table_detail_teacher"/>
+        android:id="@+id/cet_list_detail_xn"/>
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content" style="@style/MyTextAppearance.ListItem"
-        android:id="@+id/course_table_detail_addr"/>
+        android:id="@+id/cet_list_detail_xq"/>
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content" style="@style/MyTextAppearance.ListItem"
-        android:id="@+id/course_table_detail_time"/>
+        android:id="@+id/cet_list_detail_number"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" style="@style/MyTextAppearance.ListItem"
+        android:id="@+id/cet_list_detail_date"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" style="@style/MyTextAppearance.ListItem"
+        android:id="@+id/cet_list_detail_grade"/>
+
 </LinearLayout>

@@ -15,5 +15,4 @@
         android:textColor="@color/colorWhite"
         android:gravity="center"/>
 
-
 </RelativeLayout>

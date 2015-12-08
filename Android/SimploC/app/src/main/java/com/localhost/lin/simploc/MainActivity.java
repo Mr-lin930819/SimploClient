@@ -256,7 +256,6 @@ public class MainActivity extends AppCompatActivity
                             dialog.dismiss();
                         }
                     }).show();
-
         }
 //        }else if (id == R.id.action_exit) {
 //            return true;
@@ -494,6 +493,8 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onFailure(int i, Header[] headers, String s, Throwable throwable) {
                 Log.d("Fail~~", NetworkUtils.EXAM_URL);
+                dialog.dismiss();
+                Toast.makeText(MainActivity.this,"请求数据出错，重新登陆或稍后重试.,",Toast.LENGTH_LONG).show();
             }
 
             @Override
@@ -527,12 +528,52 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onFailure(int i, Header[] headers, String s, Throwable throwable) {
                 Log.d("Fail~~", NetworkUtils.EXAM_URL);
+                dialog.dismiss();
+                Toast.makeText(MainActivity.this,"请求数据出错，重新登陆或稍后重试.,",Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onSuccess(int i, Header[] headers, final String s) {
+                dialog.dismiss();
+                if(s.equals("CODE2")){//需要进行一键评价
+                    new AlertDialog.Builder(MainActivity.this).setTitle("一键评价")
+                            .setMessage("需要进行一键评价才能继续，确定进行一键评价吗？")
+                            .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    processOneKeyComment(s,QUERY_CTRL.QUERY_CET,0);
+                                }
+                            })
+                            .setNegativeButton("取消", null).show();
+                    return;
+                }else if(s.equals("CODE1")) {
+                    Toast.makeText(MainActivity.this,"身份信息超时，需重新登陆",Toast.LENGTH_LONG).show();
+                    return;
+                }
+                showCETTable(s);
+            }
+        });
+    }
+    private void processOneKeyComment(String s, final QUERY_CTRL func,final int week){
+        AsyncHttpClient networkManager = new AsyncHttpClient();
+        RequestParams params = new RequestParams(new HashMap<String,String>(){
+            {
+                put("number",userInfo.getNumber());
+                put("name",userInfo.getName());
+                put("cookie",userInfo.getCookie());
+            }
+        });
+        final ProgressDialog dialog = ProgressDialog.show(MainActivity.this,"一键评价","一键评价进行中...");
+        networkManager.get(NetworkUtils.ONE_KEY_COMMENT, params, new TextHttpResponseHandler() {
+            @Override
+            public void onFailure(int i, Header[] headers, String s, Throwable throwable) {
+
             }
 
             @Override
             public void onSuccess(int i, Header[] headers, String s) {
-                showCETTable(s);
                 dialog.dismiss();
+                Toast.makeText(MainActivity.this,"一键评价成功!",Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -557,7 +598,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         getSupportActionBar().setTitle("课程表");
-        getSupportActionBar().setSubtitle(new SimpleDateFormat("yyyyMMdd", Locale.CHINA).format(new java.util.Date()));
+        getSupportActionBar().setSubtitle(new SimpleDateFormat("yyyy年MM月dd日", Locale.CHINA).format(new java.util.Date()));
         //设置列表头
         ArrayList<Map<String,Object>> colmunData = new ArrayList<Map<String, Object>>();
         for(int i = 0 ;i < 7;i++){
@@ -659,7 +700,7 @@ public class MainActivity extends AppCompatActivity
                     //map.put("back", R.color.colorPrimary);    //设置Item的背景
                     map.put("item", showText);
                     textData.add(detailText);
-                    map.put("back", R.drawable.class_cell_4);
+                    map.put("back", R.color.colorTableCell);
                 }else{
                     map.put("item","");
                     map.put("back",R.color.colorTransparent);
@@ -697,9 +738,9 @@ public class MainActivity extends AppCompatActivity
     private void showExamTimeTable(String jsonContent){
         examList = (ListView)findViewById(R.id.main_info_list);
         ArrayList<ArrayList<String>> rawData = JsonUtils.convJson2StringLists(jsonContent);
-        ArrayList<Map<String,String>> listData = new ArrayList<Map<String, String>>();//List表格数据
+        final ArrayList<Map<String,String>> listData = new ArrayList<Map<String, String>>();//List表格数据
         getSupportActionBar().setTitle("考试时间表");
-        getSupportActionBar().setSubtitle(new SimpleDateFormat("yyyyMMdd",Locale.CHINA).format(new java.util.Date()));
+        getSupportActionBar().setSubtitle(new SimpleDateFormat("yyyy年MM月dd日",Locale.CHINA).format(new java.util.Date()));
         for(ArrayList<String> itemData:rawData){
             Map<String,String> map = new HashMap<>();
             for (String s: itemData){
@@ -708,17 +749,30 @@ public class MainActivity extends AppCompatActivity
             listData.add(map);
         }
         SimpleAdapter examAdapter = new SimpleAdapter(MainActivity.this,listData,R.layout.exam_list_item,
-                new String[]{"item1","item2","item3","item4","item5"},
-                new int[]{R.id.exam_name,R.id.exam_time,R.id.exam_addr,R.id.exam_site,R.id.exam_zone});
+                new String[]{"item1","item2"},
+                new int[]{R.id.exam_name,R.id.exam_time});
         examList.setAdapter(examAdapter);
+        examList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Map<String,String> map = listData.get(position);
+                View v = getLayoutInflater().inflate(R.layout.exam_list_detail_item,null);
+                ((TextView)v.findViewById(R.id.exam_list_detail_name)).setText("考试名称：" + map.get("item1"));
+                ((TextView)v.findViewById(R.id.exam_list_detail_time)).setText("考试时间：" + map.get("item2"));
+                ((TextView)v.findViewById(R.id.exam_list_detail_addr)).setText("考试教室：" + map.get("item3"));
+                ((TextView)v.findViewById(R.id.exam_list_detail_site)).setText("考试座位：" + map.get("item4"));
+                ((TextView)v.findViewById(R.id.exam_list_detail_zone)).setText("考试校区：" + map.get("item5"));
+                new AlertDialog.Builder(MainActivity.this).setTitle("考试信息详情").setView(v).show();
+            }
+        });
         setViewVisable(VIEWS.MAIN_INFO);
     }
 
     private void showCETTable(String jsonContent){
         ListView cetList = (ListView)findViewById(R.id.cet_info_list);
         ArrayList<ArrayList<String>> rawData = JsonUtils.convJson2StringLists(jsonContent);
-        ArrayList<Map<String,String>> listData = new ArrayList<Map<String, String>>();//List表格数据
-        getSupportActionBar().setTitle("课程表");
+        final ArrayList<Map<String,String>> listData = new ArrayList<Map<String, String>>();//List表格数据
+        getSupportActionBar().setTitle("等级考试成绩单");
         getSupportActionBar().setSubtitle("");
 
         for(ArrayList<String> itemData:rawData){
@@ -729,9 +783,23 @@ public class MainActivity extends AppCompatActivity
             listData.add(map);
         }
         SimpleAdapter cetAdapter = new SimpleAdapter(MainActivity.this,listData,R.layout.cet_list_item,
-                new String[]{"item2","item3","item6","item4","item5","item7"},
-                new int[]{R.id.xn_cet,R.id.xq_cet,R.id.date_cet,R.id.name_cet,R.id.number_cet,R.id.grade_cet});
+                new String[]{"item2","item3","item4","item7"},
+                new int[]{R.id.xn_cet,R.id.xq_cet,R.id.name_cet,R.id.grade_cet});
         cetList.setAdapter(cetAdapter);
+        cetList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                View v = getLayoutInflater().inflate(R.layout.cet_list_detail_item,null);
+                Map map = listData.get(position);
+                ((TextView)v.findViewById(R.id.cet_list_detail_xn)).setText("学年：\t\t\t\t"+map.get("item2"));
+                ((TextView)v.findViewById(R.id.cet_list_detail_xq)).setText("学期：\t\t\t\t"+map.get("item3"));
+                ((TextView)v.findViewById(R.id.cet_list_detail_date)).setText("考试时间：\t\t"+map.get("item6"));
+                ((TextView)v.findViewById(R.id.cet_list_detail_name)).setText("考试名称：\t\t"+map.get("item4"));
+                ((TextView)v.findViewById(R.id.cet_list_detail_number)).setText("准考证号：\t\t"+map.get("item5"));
+                ((TextView)v.findViewById(R.id.cet_list_detail_grade)).setText("成绩：\t\t\t\t"+map.get("item7"));
+                new AlertDialog.Builder(MainActivity.this).setTitle("等级考试详情").setView(v).show();
+            }
+        });
         setViewVisable(VIEWS.CET_LIST);
     }
 
@@ -767,34 +835,6 @@ public class MainActivity extends AppCompatActivity
                 tableView.setVisibility(View.GONE);
                 cetInfoLayout.setVisibility(View.VISIBLE);
             default:break;
-        }
-    }
-
-    /**
-     * 用于与JS交互的接口对象
-     */
-    public class JsObject {
-        @JavascriptInterface
-        public String getGradeJson() {
-            return resultJson;
-        }
-
-//        @JavascriptInterface
-//        public String getJsonTest(){
-//            String ret = "";
-////            ret += "'";
-////            ret += Test.jsMethodTest();
-////            ret += "'";
-//            return ret;
-//        }
-    }
-
-    final class MyWebChromeClient extends WebChromeClient {
-        @Override
-        public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
-            Log.d("Web Console------>", message);
-            result.confirm();
-            return true;
         }
     }
 
@@ -888,23 +928,6 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-//            //载入验证码图片
-//            if (((String) msg.obj).equalsIgnoreCase("loginPageLoaded")) {
-//                Bundle bundle = msg.getData();
-//                ImageView iv = (ImageView) findViewById(R.id.code_img);
-//                byte[] imgRes = bundle.getByteArray("checkImg");
-//                if (imgRes != null) {
-//                    Bitmap bitmap = BitmapFactory.decodeByteArray(imgRes, 0, imgRes.length);
-//                    iv.setImageBitmap(bitmap);
-//                }
-//            } else if (((String) msg.obj).equalsIgnoreCase("tryLoginEnd")) {
-//                Button btn = (Button) findViewById(R.id.btn_login);
-//                btn.setClickable(true);
-//
-//                Bundle bundle = msg.getData();
-//                btn.setText(bundle.getString("canLogin"));
-//
-//            } else if (((String) msg.obj).equalsIgnoreCase("queryGradeFinished")) {
             if (((String) msg.obj).equalsIgnoreCase("queryGradeFinished")) {
 //                Bundle bundle = msg.getData();
 //                for(String key:bundle.keySet()){

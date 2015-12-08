@@ -6,68 +6,6 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior" tools:showIn="@layout/app_bar_main"
     tools:context=".MainActivity"
     android:id="@+id/main_content" android:orientation="vertical">
-    <!--<TextView-->
-        <!--android:id="@+id/stu_num_text"-->
-        <!--android:layout_width="100dp"-->
-        <!--android:layout_height="45dp"-->
-        <!--android:text="学号"-->
-        <!--android:textSize="30dp"-->
-        <!--android:textAlignment="center"/>-->
-    <!--<EditText-->
-        <!--android:id="@+id/stu_num_edit"-->
-        <!--android:layout_width="300dp"-->
-        <!--android:layout_height="45dp"-->
-        <!--android:layout_toRightOf="@id/stu_num_text"/>-->
-
-    <!--<TextView-->
-        <!--android:id="@+id/stu_passwd_text"-->
-        <!--android:layout_below="@id/stu_num_text"-->
-        <!--android:layout_marginTop="20dp"-->
-        <!--android:layout_width="100dp"-->
-        <!--android:layout_height="45dp"-->
-        <!--android:text="密码"-->
-        <!--android:textSize="30dp"-->
-        <!--android:textAlignment="center"/>-->
-    <!--<EditText-->
-        <!--android:id="@+id/stu_passwd_edit"-->
-        <!--android:layout_alignTop="@id/stu_passwd_text"-->
-        <!--android:layout_width="300dp"-->
-        <!--android:layout_height="45dp"-->
-        <!--android:layout_toRightOf="@id/stu_passwd_text"/>-->
-
-    <!--<TextView-->
-        <!--android:id="@+id/code_text"-->
-        <!--android:layout_below="@id/stu_passwd_text"-->
-        <!--android:layout_width="100dp"-->
-        <!--android:layout_height="45dp"-->
-        <!--android:layout_marginTop="20dp"-->
-        <!--android:text="验证码"-->
-        <!--android:textSize="30dp"-->
-        <!--android:textAlignment="center"/>-->
-    <!--<EditText-->
-        <!--android:id="@+id/code_edit"-->
-        <!--android:layout_alignTop="@id/code_text"-->
-        <!--android:layout_width="300dp"-->
-        <!--android:layout_height="45dp"-->
-        <!--android:layout_toRightOf="@id/code_text"/>-->
-    <!-- -->
-    <!--<ImageView-->
-        <!--android:id="@+id/code_img"-->
-        <!--android:layout_width="100dp"-->
-        <!--android:layout_height="45dp"-->
-        <!--android:layout_below="@+id/code_text"-->
-        <!--android:layout_marginTop="30dp"-->
-        <!--android:layout_alignParentRight="true" />-->
-
-    <!--<Button-->
-        <!--android:layout_width="350dp"-->
-        <!--android:layout_height="50dp"-->
-        <!--android:layout_below="@id/code_img"-->
-        <!--android:layout_marginTop="75dp"-->
-        <!--android:text="登      录"-->
-        <!--android:textSize="25dp"-->
-        <!--android:background="@color/colorLoginButton"-->
-        <!--android:id="@+id/btn_login"/>-->
 
     <!-- 成绩查询布局 -->
     <LinearLayout
@@ -112,7 +50,7 @@
 "       <com.localhost.lin.simploc.customview.NoneScrollGridView
             android:layout_width="match_parent" android:background="@color/colorLoginButton"
             android:layout_height="wrap_content" android:numColumns="7"
-            android:id="@+id/table_column" android:paddingLeft="@dimen/table_header_width" android:horizontalSpacing="3dp"
+            android:id="@+id/table_column" android:paddingLeft="@dimen/table_row_width" android:horizontalSpacing="3dp"
         ></com.localhost.lin.simploc.customview.NoneScrollGridView>
 
         <ScrollView
@@ -125,17 +63,17 @@
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content">
                     <com.localhost.lin.simploc.customview.NoneScrollGridView
-                        android:layout_width="@dimen/table_header_width"
+                        android:layout_width="@dimen/table_row_width"
                         android:layout_height="wrap_content"
                         android:id="@+id/table_row" android:background="@color/colorLoginButton"
                         android:numColumns="1" android:verticalSpacing="3dp"
-                        android:columnWidth="20dp" android:stretchMode="columnWidth"
+                        android:columnWidth="@dimen/table_row_width" android:stretchMode="columnWidth"
                         ></com.localhost.lin.simploc.customview.NoneScrollGridView>
                     <com.localhost.lin.simploc.customview.NoneScrollGridView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:id="@+id/lesson_table"
-                        android:numColumns="7" android:verticalSpacing="3dp" >
+                        android:numColumns="7" android:verticalSpacing="3dp" android:horizontalSpacing="3dp" >
                         <!--android:columnWidth="45dp" android:stretchMode="columnWidth"-->
                     </com.localhost.lin.simploc.customview.NoneScrollGridView>
                 </LinearLayout>
@@ -183,40 +121,39 @@
             android:layout_height="@dimen/title_height"
             android:text="考试信息" android:textSize="@dimen/table_title_text_size"
             android:gravity="center"/>
-        <HorizontalScrollView
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-                <!-- 表头 -->
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="30dp" android:background="@color/colorLoginButton">
-                    <TextView
-                        android:layout_width="150dp" android:gravity="center"
-                        android:layout_height="match_parent" android:text="课程名称" />
-                    <TextView
-                        android:layout_width="120dp" android:gravity="center"
-                        android:layout_height="match_parent" android:text="考试时间" />
-                    <TextView
-                        android:layout_width="90dp"
-                        android:layout_height="match_parent" android:text="考试地点" />
-                    <TextView
-                        android:layout_width="25dp" android:gravity="center"
-                        android:layout_height="match_parent" android:text="座位"/>
-                    <TextView
-                        android:layout_width="90dp" android:gravity="center"
-                        android:layout_height="match_parent" android:text="校区"/>
-                </LinearLayout>
-                <ListView
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:id="@+id/main_info_list"/>
+            <!-- 表头 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="30dp" android:background="@color/colorLoginButton"
+                android:weightSum="12">
+                <TextView
+                    android:layout_width="wrap_content" android:gravity="center"
+                    android:layout_height="match_parent" android:text="课程名称"
+                    android:layout_weight="5"/>
+                <TextView
+                    android:layout_width="wrap_content" android:gravity="center"
+                    android:layout_height="match_parent" android:text="考试时间"
+                    android:layout_weight="7"/>
+                <!--<TextView-->
+                    <!--android:layout_width="90dp" android:gravity="center"-->
+                    <!--android:layout_height="match_parent" android:text="考试地点" />-->
+                <!--<TextView-->
+                    <!--android:layout_width="25dp" android:gravity="center"-->
+                    <!--android:layout_height="match_parent" android:text="座位"/>-->
+                <!--<TextView-->
+                    <!--android:layout_width="90dp" android:gravity="center"-->
+                    <!--android:layout_height="match_parent" android:text="校区"/>-->
             </LinearLayout>
-        </HorizontalScrollView>
+            <ListView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/main_info_list"/>
+        </LinearLayout>
 
     </LinearLayout>
 
@@ -231,44 +168,39 @@
             android:layout_height="@dimen/title_height"
             android:text="等级考试信息" android:textSize="@dimen/table_title_text_size"
             android:gravity="center"/>
-        <HorizontalScrollView
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <!-- 表头 -->
             <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
+                android:layout_width="match_parent"
+                android:layout_height="30dp" android:background="@color/colorLoginButton"
+                android:weightSum="12">
+                <TextView
+                    android:layout_width="wrap_content" android:gravity="center"
+                    android:layout_height="match_parent" android:text="学年"
+                    android:layout_weight="4"/>
+                <TextView
+                    android:layout_width="wrap_content" android:gravity="center"
+                    android:layout_height="match_parent" android:text="学期"
+                    android:layout_weight="2"/>
+                <TextView
+                    android:layout_width="wrap_content" android:gravity="center"
+                    android:layout_height="match_parent" android:text="考试名称"
+                    android:layout_weight="3"/>
+                <TextView
+                    android:layout_width="wrap_content" android:gravity="center"
+                    android:layout_height="match_parent" android:text="成绩"
+                    android:layout_weight="3"/>
 
-                <!-- 表头 -->
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="30dp" android:background="@color/colorLoginButton">
-                    <TextView
-                        android:layout_width="150dp" android:gravity="center"
-                        android:layout_height="match_parent" android:text="学年" />
-                    <TextView
-                        android:layout_width="50dp" android:gravity="center"
-                        android:layout_height="match_parent" android:text="学期" />
-                    <TextView
-                        android:layout_width="90dp"
-                        android:layout_height="match_parent" android:text="考试名称" />
-                    <TextView
-                        android:layout_width="150dp" android:gravity="center"
-                        android:layout_height="match_parent" android:text="准考证号"/>
-                    <TextView
-                        android:layout_width="135dp" android:gravity="center"
-                        android:layout_height="match_parent" android:text="日期"/>
-                    <TextView
-                        android:layout_width="50dp" android:gravity="center"
-                        android:layout_height="match_parent" android:text="成绩"/>
-
-                </LinearLayout>
-                <ListView
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:id="@+id/cet_info_list"/>
             </LinearLayout>
-        </HorizontalScrollView>
+            <ListView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/cet_info_list"/>
+        </LinearLayout>
 
     </LinearLayout>
 </LinearLayout>

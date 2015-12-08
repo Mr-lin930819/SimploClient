@@ -20,4 +20,5 @@ public class NetworkUtils {
     public static final String EXAM_URL             = HOST_URL + "/QueryExamServlet";
     public static final String CET_URL              = HOST_URL + "/QueryCETServlet";
     public static final String TEST_LESSON_URL        = TEST_HOST_URL +  "/QueryCourseServlet";
+    public static final String ONE_KEY_COMMENT      = HOST_URL + "/OneKeyCommentServlet";
 }
