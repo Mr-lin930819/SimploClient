@@ -256,6 +256,14 @@ public class MainActivity extends AppCompatActivity
                             dialog.dismiss();
                         }
                     }).show();
+        }else if(id == R.id.action_about) {
+            new AlertDialog.Builder(MainActivity.this).setTitle("关于")
+                    .setMessage("SimploC    1.0.3 \n\nAuthor: Lin \n\n " +
+                            "\n 应用使用的开源框架/库: \n - AsyncHttpClient(异步网络请求库)" +
+                            "\n - ViewPagerIndicator(ViewPager指示器)" +
+                            "\n - LitePay(SQLite数据库ORM数据持久化)" +
+                            "\n - org.json(JSON解析工具)" +
+                            "\n\n 2015.12.08").show();
         }
 //        }else if (id == R.id.action_exit) {
 //            return true;
@@ -618,11 +626,12 @@ public class MainActivity extends AppCompatActivity
         ArrayList<Map<String,String>> rowData = new ArrayList<Map<String, String>>();
         for(int i = 0 ;i < 6;i++) {
             Map<String, String> map = new HashMap<String, String>();
-            map.put("item", "第" + String.valueOf(i*2 + 1) + "-" + String.valueOf(i*2 + 2) + "节");
+            map.put("item1", String.valueOf(i*2 + 1));
+            map.put("item2", String.valueOf(i*2 + 2));
             rowData.add(map);
         }
         SimpleAdapter rowAdapter = new SimpleAdapter(MainActivity.this, rowData, R.layout.course_table_row_item,
-                new String[]{"item"}, new int[]{R.id.row_item});
+                new String[]{"item1","item2"}, new int[]{R.id.row_item_top,R.id.row_item_bottom});
         courseTableRow.setAdapter(rowAdapter);
 
         //设置表数据
@@ -854,7 +863,7 @@ public class MainActivity extends AppCompatActivity
 //            HttpGetHC4 gradeQueryGetRequest = new HttpGetHC4(NetworkUtils.AVATOR_URL + "?number=" + mNumber +
 //                    "&cookie=" + mCookie);
             /*
-             *   2015-1-16 从服务端获取头像改为直接从网站获取头像
+             *   2015-10-16 从服务端获取头像改为直接从网站获取头像
              */
             HttpGetHC4 gradeQueryGetRequest = new HttpGetHC4("http://jwgl.fjnu.edu.cn/readimagexs.aspx?xh=" + mNumber);
             gradeQueryGetRequest.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");

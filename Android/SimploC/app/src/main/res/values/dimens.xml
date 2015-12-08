@@ -16,5 +16,6 @@
     <dimen name="table_header_width">20dp</dimen>
     
     <dimen name="table_column_width">45dp</dimen>
-    <dimen name="table_row_width">35dp</dimen>
+    <dimen name="table_row_width">30dp</dimen>
+    <dimen name="table_item_height">100dp</dimen>
 </resources>

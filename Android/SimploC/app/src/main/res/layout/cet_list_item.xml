@@ -3,21 +3,21 @@
     android:layout_width="match_parent" android:layout_height="match_parent"
     android:orientation="horizontal" android:weightSum="12" style="MyTextAppearance.ListItem">
     <TextView
-        android:layout_width="wrap_content" android:layout_weight="4"
+        android:layout_width="0dp" android:layout_weight="4"
         android:layout_height="wrap_content"
-        android:minHeight="30dp"
+        android:minHeight="45dp" android:textSize="18sp"
         android:id="@+id/xn_cet"/>
     <TextView
-        android:layout_width="wrap_content" android:layout_weight="2"
+        android:layout_width="0dp" android:layout_weight="2"
         android:layout_height="wrap_content"
-        android:minHeight="30dp"
+        android:minHeight="45dp" android:textSize="18sp"
         android:id="@+id/xq_cet"/>
     <TextView
-        android:layout_width="wrap_content" android:layout_weight="3"
-        android:layout_height="wrap_content"
-        android:minHeight="30dp" android:id="@+id/name_cet"/>
+        android:layout_width="0dp" android:layout_weight="3"
+        android:layout_height="wrap_content" android:textSize="18sp"
+        android:minHeight="45dp" android:id="@+id/name_cet"/>
     <TextView
-        android:layout_width="wrap_content" android:layout_weight="3"
-        android:layout_height="wrap_content" android:minHeight="30dp"
+        android:layout_width="0dp" android:layout_weight="3" android:textSize="18sp"
+        android:layout_height="wrap_content" android:minHeight="45dp"
         android:id="@+id/grade_cet"/>
 </LinearLayout>

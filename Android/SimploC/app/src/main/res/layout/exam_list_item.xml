@@ -4,15 +4,16 @@
     android:orientation="horizontal" android:weightSum="1.0">
     <!-- 课程名称 -->
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:minHeight="30dp" android:layout_weight="0.4"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content" android:textSize="18sp"
+        android:minHeight="45dp" android:layout_weight="0.4"
         android:id="@+id/exam_name"/>
     <!-- 考试时间 -->
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:minHeight="30dp" android:layout_weight="0.6"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content" android:textSize="18sp"
+        android:gravity="center_horizontal"
+        android:minHeight="45dp" android:layout_weight="0.6"
         android:id="@+id/exam_time"/>
     <!--&lt;!&ndash; 考试地点 &ndash;&gt;-->
     <!--<TextView-->

@@ -12,6 +12,7 @@
     <color name="colorDeleteButtonPressed">#B0171F</color>
     <color name="colorTableHeaderBack">#FF3030</color>
     <color name="colorBlack">#000000</color>
+    <color name="colorGrayBack">#686868</color>
 
     <color name="colorTransparent">#00000000</color>
 
