@@ -87,6 +87,13 @@ public class SelectTimeActivity extends AppCompatActivity {
             }
         });
         httpClient.get(NetworkUtils.XN_OPTIONS_URL, params, new TextHttpResponseHandler() {
+
+            @Override
+            public void onStart() {
+                setCharset("gb2312");
+                super.onStart();
+            }
+
             @Override
             public void onFailure(int i, cz.msebera.android.httpclient.Header[] headers, String s, Throwable throwable) {
                 Toast.makeText(SelectTimeActivity.this,"网络出错",Toast.LENGTH_LONG);

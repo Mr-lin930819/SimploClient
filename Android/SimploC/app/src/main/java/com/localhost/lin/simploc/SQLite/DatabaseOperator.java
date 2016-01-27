@@ -17,10 +17,14 @@ public class DatabaseOperator extends SQLiteOpenHelper{
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("create table userInfo(id INTEGER PRIMARY KEY AUTOINCREMENT,number varchar(12),password varchar(20),cookie varchar(50),name varchar(20))");
         db.execSQL("create table loginLog(id INTEGER ,lastLogin date, hadLogin smallint,showAvator boolean)");
+        db.execSQL("create table courseTable(id INTEGER PRIMARY KEY AUTOINCREMENT, number varchar(12), tabledata varchar(2048))");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
+        //新增课程表数据的保存，新建一张表存储
+        if(oldVersion == 1 && newVersion ==2) {
+            db.execSQL("create table courseTable(id INTEGER, number varchar(12), tabledata varchar(2048))");
+        }
     }
 }

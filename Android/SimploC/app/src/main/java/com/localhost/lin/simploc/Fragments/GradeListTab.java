@@ -31,11 +31,18 @@ public class GradeListTab extends android.support.v4.app.Fragment {
         View view = inflater.inflate(R.layout.fragment_tab_list,container,false);
         gradeList = (ListView)view.findViewById(R.id.grade_listview);
         ArrayList<Map<String,String>> data = new ArrayList<Map<String, String>>();
-        for(Map.Entry<String,String> item: JsonUtils.convJson2Map(getArguments().getString("jsonResult"), "GRADE").entrySet()){
-            Map<String,String> map  = new HashMap<String,String>();
-            map.put("item",item.getKey());
-            map.put("value",item.getValue());
-            data.add(map);
+        try {
+            for (Map.Entry<String, String> item : JsonUtils.convJson2Map(getArguments().getString("jsonResult"), "GRADE").entrySet()) {
+                Map<String, String> map = new HashMap<String, String>();
+                map.put("item", item.getKey());
+                map.put("value", item.getValue());
+                data.add(map);
+            }
+        }catch (NullPointerException e){    //空指针则为获取成绩数据出错,返回空盘
+            SimpleAdapter adapter = new SimpleAdapter(view.getContext(),data, R.layout.grade_list_item,
+                    new String[]{"item","value"},new int[]{R.id.grade_item,R.id.grade_value});
+            gradeList.setAdapter(adapter);
+            return view;
         }
         SimpleAdapter adapter = new SimpleAdapter(view.getContext(),data, R.layout.grade_list_item,
                 new String[]{"item","value"},new int[]{R.id.grade_item,R.id.grade_value});

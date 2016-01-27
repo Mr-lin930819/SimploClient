@@ -65,6 +65,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtilsHC4;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -83,7 +84,7 @@ public class MainActivity extends AppCompatActivity
     private static final int CUSTOM_QUERY_REQUEST_CODE = 2;
     NetworkThreads threads = null;
     private String resultJson;
-    WebView resultWebview;
+    //WebView resultWebview;
     MaskImage toxiang;
     TextView nameText;
     ListView gradeList,examList;
@@ -161,6 +162,12 @@ public class MainActivity extends AppCompatActivity
         if (sqLiteOperation.queryIsShowAvator(userInfo.getNumber()))
             new AvatarGetTask(userInfo.getNumber(), userInfo.getCookie()).execute((Void)null);
 
+        //默认主界面显示课程表    2016.01.27 Add
+        String cstbData = sqLiteOperation.getSavedCsTb(userInfo.getNumber());
+        if(!cstbData.equals("")){
+            showCourseTable(cstbData, 10);
+        }
+
     }
 
     void initContentView(){
@@ -198,8 +205,8 @@ public class MainActivity extends AppCompatActivity
         }), new TextHttpResponseHandler() {
             @Override
             public void onStart() {
-                super.onStart();
                 setCharset("gb2312");
+                super.onStart();
             }
 
             @Override
@@ -258,13 +265,16 @@ public class MainActivity extends AppCompatActivity
                     }).show();
         }else if(id == R.id.action_about) {
             new AlertDialog.Builder(MainActivity.this).setTitle("关于")
-                    .setMessage("SimploC    1.0.3 \n\nAuthor: Lin \n\n " +
-                            "\n 应用使用的开源框架/库: \n - AsyncHttpClient (异步网络请求库)" +
-                            "\n - ViewPagerIndicator (ViewPager指示器)" +
+                    .setMessage("SimploC    1.0.4 \n\nAuthor: Lin \n" +
+                            "Technical Support: Tom Zhang \n\n " +
+                            //"\n 应用使用的开源框架/库: \n - AsyncHttpClient (异步网络请求库)" +
+                            //"\n - ViewPagerIndicator (ViewPager指示器)" +
+                            "\n 应用使用的开源框架/库: \n - AsyncHttpClient " +
+                            "\n - ViewPagerIndicator " +
                             "\n - Chart.js (基于Html5 Canvas的图表绘制库)" +
-                            "\n - LitePay (SQLite数据库ORM数据持久化)" +
+                            "\n - LitePay (SQLite数据库ORM)" +
                             "\n - org.json (JSON解析工具)" +
-                            "\n\n 2015.12.08").show();
+                            "\n\n 2016.01.27").show();
         }
 //        }else if (id == R.id.action_exit) {
 //            return true;
@@ -325,7 +335,7 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    enum QUERY_CTRL{
+    private enum QUERY_CTRL{
         QUERY_LESSON,
         QUERY_EXAM,
         QUERY_CET
@@ -357,9 +367,16 @@ public class MainActivity extends AppCompatActivity
 
 
         httpClient.get(NetworkUtils.XN_OPTIONS_URL, params, new TextHttpResponseHandler() {
+
+            @Override
+            public void onStart() {
+                setCharset("gb2312");
+                super.onStart();
+            }
+
             @Override
             public void onFailure(int i, cz.msebera.android.httpclient.Header[] headers, String s, Throwable throwable) {
-                Toast.makeText(MainActivity.this, "网络出错", Toast.LENGTH_LONG).show();
+                Toast.makeText(MainActivity.this, "网络请求出错", Toast.LENGTH_LONG).show();
             }
 
             @Override
@@ -434,14 +451,14 @@ public class MainActivity extends AppCompatActivity
     private void queryLesson(final String xn, final String xq,final String week) {
         final ProgressDialog dialog = ProgressDialog.show(MainActivity.this, "课程表", "查询中... ...");
 
-        //测试
-        if(false) {
-            TestNetwork testNetwork = new TestNetwork(NetworkUtils.TEST_LESSON_URL,"?number=" + userInfo.getNumber() + "&name=" + userInfo.getName() + "&cookie=" +
-                    userInfo.getCookie() + "&xn=" + xn + "&xq=" + xq);
-            new Thread(testNetwork).start();
-            dialog.dismiss();
-            return;
-        }
+//        //测试
+//        if(false) {
+//            TestNetwork testNetwork = new TestNetwork(NetworkUtils.TEST_LESSON_URL,"?number=" + userInfo.getNumber() + "&name=" + userInfo.getName() + "&cookie=" +
+//                    userInfo.getCookie() + "&xn=" + xn + "&xq=" + xq);
+//            new Thread(testNetwork).start();
+//            dialog.dismiss();
+//            return;
+//        }
 
         AsyncHttpClient networkManager = new AsyncHttpClient();
         RequestParams params = new RequestParams(new HashMap<String,String>(){
@@ -464,12 +481,18 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onFailure(int i, Header[] headers, String s, Throwable throwable) {
                 Log.d("Fail~~", NetworkUtils.LESSON_URL);
+                Toast.makeText(MainActivity.this, "成绩查询失败", Toast.LENGTH_LONG).show();
             }
 
             @Override
             public void onSuccess(int i, Header[] headers, String s) {
                 Log.d("Success!!", userInfo.getNumber());
                 dialog.dismiss();
+                if(sqLiteOperation.getSavedCsTb(userInfo.getNumber()).equals("")){
+                    sqLiteOperation.insertCourseTb(userInfo.getNumber(), s);
+                }else{
+                    sqLiteOperation.updateCsTb(userInfo.getNumber(), s);
+                }
                 showCourseTable(s, Integer.parseInt(week));
             }
         });

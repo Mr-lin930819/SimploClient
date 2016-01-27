@@ -16,8 +16,10 @@ import java.util.ArrayList;
 public class SQLiteOperation {
     private DatabaseOperator databaseOperator = null;
     public SQLiteOperation(Context context){
-        databaseOperator = new DatabaseOperator(context,"users.db",null,1);
+        databaseOperator = new DatabaseOperator(context,"users.db",null,2);
     }
+
+    /*----------------添加操作------------------*/
 
     public void insertUser(String number,String password,String cookie,String name){
         SQLiteDatabase db = databaseOperator.getWritableDatabase();// 取得数据库操作
@@ -34,6 +36,15 @@ public class SQLiteOperation {
         db.close();// 记得关闭数据库操作
     }
 
+    public void insertCourseTb(String number, String tabledata){
+        SQLiteDatabase db = databaseOperator.getWritableDatabase();// 取得数据库操作
+        db.execSQL("insert into courseTable(id,number,tabledata) values(NULL,?,?)",
+                new Object[] {number,tabledata});
+        db.close();
+    }
+
+    /*----------------查询操作-----------------*/
+
     /**
      * 获取当天已登录用户信息
      * @param date  当前时间
@@ -49,36 +60,6 @@ public class SQLiteOperation {
             return retNumber;
         }
         return null;
-    }
-
-    public void delete(String number) {// 删除纪录
-        SQLiteDatabase db = databaseOperator.getWritableDatabase();
-        String id = find(number)[0];
-        db.execSQL("delete from userInfo where id=?", new Object[] {id });
-        db.execSQL("delete from loginLog where id=?", new Object[] {id });
-        db.close();
-    }
-
-    public void updateLoginStatus(String number,String isLogin) {// 修改纪录
-        SQLiteDatabase db = databaseOperator.getWritableDatabase();
-        db.execSQL("update loginLog set hadLogin=? " +
-                "where id=(select id from userInfo where number=?)", new Object[] { isLogin, number });
-        db.close();
-    }
-
-    public void updateLoginInfo(String number,String loginDate,String cookie){
-        SQLiteDatabase db = databaseOperator.getWritableDatabase();
-        db.execSQL("update userInfo set cookie=? where number=?", new Object[]{cookie, number});
-        db.execSQL("update loginLog set lastLogin=?,hadLogin=1 " +
-                "where id=(select id from userInfo where number=?)", new Object[] { loginDate, number });
-        db.close();
-    }
-
-    public void updateIsShowAvator(String number,boolean isShow){
-        SQLiteDatabase db = databaseOperator.getWritableDatabase();
-        db.execSQL("update loginLog set showAvator=" + (isShow ? "1" : "0") +
-                " where id=(select id from userInfo where number=?)", new Object[] { number });
-        db.close();
     }
 
     /**
@@ -156,6 +137,26 @@ public class SQLiteOperation {
         return result;
     }
 
+    /**
+     * 查询数据库中存储的指定学号的课程表数据
+     * @param number    学号
+     * @return          json格式课程表数据
+     */
+    public String getSavedCsTb(String number){
+        String data = null;
+        SQLiteDatabase db = databaseOperator.getReadableDatabase();
+        // 用游标Cursor接收从数据库检索到的数据
+        Cursor cursor = db.rawQuery("select tabledata from courseTable where number=?", new String[]{number});
+        if (cursor.moveToFirst()) {// 依次取出数据
+            data = (cursor.getString(cursor.getColumnIndex("tabledata")));
+        }else{
+            db.close();
+            return "";
+        }
+        db.close();
+        return data;
+    }
+
     private String getUserId(String number){
         SQLiteDatabase db = databaseOperator.getReadableDatabase();
         String id = null;
@@ -165,4 +166,48 @@ public class SQLiteOperation {
         }
         return id;
     }
+
+
+    /*--------------删除操作-------------------*/
+
+    public void delete(String number) {// 删除纪录
+        SQLiteDatabase db = databaseOperator.getWritableDatabase();
+        String id = find(number)[0];
+        db.execSQL("delete from userInfo where id=?", new Object[] {id });
+        db.execSQL("delete from loginLog where id=?", new Object[] {id });
+        db.execSQL("delete from courseTable where number=?", new Object[]{number});
+        db.close();
+    }
+
+    /*----------------更新操作---------------------*/
+
+    public void updateLoginStatus(String number,String isLogin) {// 修改纪录
+        SQLiteDatabase db = databaseOperator.getWritableDatabase();
+        db.execSQL("update loginLog set hadLogin=? " +
+                "where id=(select id from userInfo where number=?)", new Object[] { isLogin, number });
+        db.close();
+    }
+
+    public void updateLoginInfo(String number,String loginDate,String cookie){
+        SQLiteDatabase db = databaseOperator.getWritableDatabase();
+        db.execSQL("update userInfo set cookie=? where number=?", new Object[]{cookie, number});
+        db.execSQL("update loginLog set lastLogin=?,hadLogin=1 " +
+                "where id=(select id from userInfo where number=?)", new Object[] { loginDate, number });
+        db.close();
+    }
+
+    public void updateIsShowAvator(String number,boolean isShow){
+        SQLiteDatabase db = databaseOperator.getWritableDatabase();
+        db.execSQL("update loginLog set showAvator=" + (isShow ? "1" : "0") +
+                " where id=(select id from userInfo where number=?)", new Object[] { number });
+        db.close();
+    }
+
+    public void updateCsTb(String number, String data){
+        SQLiteDatabase db = databaseOperator.getWritableDatabase();
+        db.execSQL("update courseTable set tabledata=?" +
+                " where number=?", new Object[] { data, number });
+        db.close();
+    }
+
 }

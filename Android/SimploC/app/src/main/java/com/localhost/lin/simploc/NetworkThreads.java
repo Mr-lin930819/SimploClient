@@ -25,9 +25,9 @@ import java.util.Iterator;
  * Created by Lin on 2015/11/5.
  */
 public class NetworkThreads {
-    //public static final String HOST_URL           = "http://172.20.27.41:8080/SimploServer";
+    public static final String HOST_URL           = NetworkUtils.HOST_URL;
     //public static final String HOST_URL           = "http://192.168.1.102:8080/SimploServer";
-    public static final String HOST_URL           = "http://www.pockitcampus.com/SimploServer";
+    //public static final String HOST_URL           = "http://www.pockitcampus.com/SimploServer";
     public static final String LOGIN_URL          = HOST_URL + "/LoginPageServlet";
     public static final String TRY_LOGIN_URL     = HOST_URL + "/TryLoginServlet";
     public static final String C_IMG_URL          = HOST_URL + "/CheckImgServlet";
