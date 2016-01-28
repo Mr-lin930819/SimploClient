@@ -350,10 +350,17 @@ public class MainActivity extends AppCompatActivity
         final Spinner xnSpinner = (Spinner)layout.findViewById(R.id.dialog_xn_spinner);
         final Spinner xqSpinner = (Spinner)layout.findViewById(R.id.dialog_xq_spinner);
         final Spinner weekSpinner = (Spinner)layout.findViewById(R.id.dialog_week_spinner);
+        String optUrl;
 
         if(func.equals(QUERY_CTRL.QUERY_CET)){
             queryCET();
             return;
+        }
+
+        if(func.equals(QUERY_CTRL.QUERY_LESSON)){
+            optUrl = NetworkUtils.TB_XN_OP_URL;
+        }else{
+            optUrl = NetworkUtils.XN_OPTIONS_URL;
         }
 
         AsyncHttpClient httpClient = new AsyncHttpClient();
@@ -366,7 +373,7 @@ public class MainActivity extends AppCompatActivity
         });
 
 
-        httpClient.get(NetworkUtils.XN_OPTIONS_URL, params, new TextHttpResponseHandler() {
+        httpClient.get(optUrl, params, new TextHttpResponseHandler() {
 
             @Override
             public void onStart() {
@@ -381,7 +388,12 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onSuccess(int i, cz.msebera.android.httpclient.Header[] headers, String s) {
+
                 ArrayList<String> retData = JsonUtils.convJson2List(s, "CXTJ");
+                if(retData == null) {
+                    Toast.makeText(MainActivity.this, "获取学年失败(服务器错误或网络错误", Toast.LENGTH_LONG).show();
+                    return;
+                }
                 ArrayAdapter xnAdapter = new ArrayAdapter<>(layout.getContext(),
                         android.R.layout.simple_spinner_item, retData);
                 ArrayAdapter xqAdapter = new ArrayAdapter<String>(layout.getContext(), android.R.layout.simple_spinner_item,
