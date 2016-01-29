@@ -13,6 +13,16 @@ public class UserEntity {
     private String hadLogin;
     private boolean isShowAvator;
 
+    public String getOpenAppId() {
+        return openAppId;
+    }
+
+    public void setOpenAppId(String openAppId) {
+        this.openAppId = openAppId;
+    }
+
+    private String openAppId;
+
     public String getId() {
         return id;
     }

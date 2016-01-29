@@ -50,6 +50,7 @@ public class JsonUtils {
                 data.add(jsonArray.getString(i));
             }
         } catch (JSONException e) {
+            e.printStackTrace();
             return null;
         }
         return data;

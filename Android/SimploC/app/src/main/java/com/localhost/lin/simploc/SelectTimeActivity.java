@@ -81,9 +81,10 @@ public class SelectTimeActivity extends AppCompatActivity {
         final String[] lgMsg = mSqLiteOperation.find(NetworkThreads.loginInfo.getNumber());
         RequestParams params = new RequestParams(new HashMap<String,String>(){
             {
-                put("number",NetworkThreads.loginInfo.getNumber());
-                put("xm",lgMsg[4]);
-                put("cookie",lgMsg[3]);
+//                put("number",NetworkThreads.loginInfo.getNumber());
+//                put("xm",lgMsg[4]);
+//                put("cookie",lgMsg[3]);
+                put("openUserId", lgMsg[8]);
             }
         });
         httpClient.get(NetworkUtils.XN_OPTIONS_URL, params, new TextHttpResponseHandler() {

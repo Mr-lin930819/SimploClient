@@ -15,7 +15,8 @@ public class DatabaseOperator extends SQLiteOpenHelper{
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("create table userInfo(id INTEGER PRIMARY KEY AUTOINCREMENT,number varchar(12),password varchar(20),cookie varchar(50),name varchar(20))");
+        db.execSQL("create table userInfo(id INTEGER PRIMARY KEY AUTOINCREMENT,number varchar(12),password varchar(20)," +
+                "cookie varchar(50),name varchar(20),open_app_id varchar(45)");
         db.execSQL("create table loginLog(id INTEGER ,lastLogin date, hadLogin smallint,showAvator boolean)");
         db.execSQL("create table courseTable(id INTEGER PRIMARY KEY AUTOINCREMENT, number varchar(12), tabledata varchar(2048))");
     }
@@ -23,8 +24,11 @@ public class DatabaseOperator extends SQLiteOpenHelper{
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         //新增课程表数据的保存，新建一张表存储
-        if(oldVersion == 1 && newVersion ==2) {
+        if(oldVersion == 1) {
             db.execSQL("create table courseTable(id INTEGER, number varchar(12), tabledata varchar(2048))");
+        }
+        if(oldVersion <= 2) {
+            db.execSQL("ALTER table userInfo ADD COLUMN `open_app_id` VARCHAR(45)");
         }
     }
 }

@@ -16,7 +16,7 @@ import java.util.ArrayList;
 public class SQLiteOperation {
     private DatabaseOperator databaseOperator = null;
     public SQLiteOperation(Context context){
-        databaseOperator = new DatabaseOperator(context,"users.db",null,2);
+        databaseOperator = new DatabaseOperator(context,"users.db",null,3);
     }
 
     /*----------------添加操作------------------*/
@@ -66,9 +66,10 @@ public class SQLiteOperation {
      * 通过学号获取用户设置数据
      * @param number 学号
      * @return 字符数组，0-id，1-学号，2-密码，3-cookie，4-姓名，5-上次登录时间，6-是否已经登录，7-是否显示头像
+     *                  8 - openAppId
      */
     public String[] find(String number) {// 根据学号查找纪录
-        String[] tusers = new String[8];
+        String[] tusers = new String[9];
         SQLiteDatabase db = databaseOperator.getReadableDatabase();
         // 用游标Cursor接收从数据库检索到的数据
         Cursor cursor = db.rawQuery("select * from userInfo where number=?", new String[]{number});
@@ -84,6 +85,7 @@ public class SQLiteOperation {
                 tusers[6] = (innerCursor.getString(innerCursor.getColumnIndex("hadLogin")));
                 tusers[7] = (String.valueOf(innerCursor.getInt(innerCursor.getColumnIndex("showAvator"))));
             }
+            tusers[8] = cursor.getString(cursor.getColumnIndex("open_app_id"));
             return tusers;
         }
         db.close();
@@ -101,6 +103,7 @@ public class SQLiteOperation {
             tusers.setPassword(cursor.getString(cursor.getColumnIndex("password")));
             tusers.setCookie(cursor.getString(cursor.getColumnIndex("cookie")));
             tusers.setName(cursor.getString(cursor.getColumnIndex("name")));
+            tusers.setOpenAppId(cursor.getString(cursor.getColumnIndex("open_app_id")));
             Cursor innerCursor = db.rawQuery("select * from loginLog where id=?", new String[]{tusers.getId()});
             if (innerCursor.moveToFirst()) {
                 tusers.setLastLogin(innerCursor.getString(innerCursor.getColumnIndex("lastLogin")));
@@ -210,4 +213,10 @@ public class SQLiteOperation {
         db.close();
     }
 
+    public void updateOpenId(String number, String uuid){
+        SQLiteDatabase database = databaseOperator.getWritableDatabase();
+        database.execSQL("update userInfo set open_app_id=? where number=?",
+                new Object[]{uuid, number});
+        database.close();
+    }
 }

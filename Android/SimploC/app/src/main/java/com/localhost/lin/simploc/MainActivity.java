@@ -83,7 +83,6 @@ public class MainActivity extends AppCompatActivity
     private static final int SETTING_REQUEST_CODE = 1;
     private static final int CUSTOM_QUERY_REQUEST_CODE = 2;
     NetworkThreads threads = null;
-    private String resultJson;
     //WebView resultWebview;
     MaskImage toxiang;
     TextView nameText;
@@ -108,6 +107,7 @@ public class MainActivity extends AppCompatActivity
         sqLiteOperation = new SQLiteOperation(this);
         setContentView(R.layout.activity_main);
         //载入已登录的用户信息，此处学号获取采用静态全局变量的方式，更好的方式是采用意图Intent
+        // UserInfo为已登录用户信息，将会存在于整个MainActivity生命周期内，完成各项查询
         userInfo = sqLiteOperation.findUser(NetworkThreads.loginInfo.getNumber());
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -198,9 +198,10 @@ public class MainActivity extends AppCompatActivity
         AsyncHttpClient client = new AsyncHttpClient();
         client.get(NetworkUtils.XN_OPTIONS_URL, new RequestParams(new HashMap<String, String>() {
             {
-                put("number", userInfo.getNumber());
-                put("xm", userInfo.getName());
-                put("cookie", userInfo.getCookie());
+//                put("number", userInfo.getNumber());
+//                put("xm", userInfo.getName());
+//                put("cookie", userInfo.getCookie());
+                put("openUserId", userInfo.getOpenAppId());
             }
         }), new TextHttpResponseHandler() {
             @Override
@@ -366,9 +367,10 @@ public class MainActivity extends AppCompatActivity
         AsyncHttpClient httpClient = new AsyncHttpClient();
         RequestParams params = new RequestParams(new HashMap<String,String>(){
             {
-                put("number",userInfo.getNumber());
-                put("xm",userInfo.getName());
-                put("cookie",userInfo.getCookie());
+//                put("number",userInfo.getNumber());
+//                put("xm",userInfo.getName());
+//                put("cookie",userInfo.getCookie());
+                put("openUserId", userInfo.getOpenAppId());
             }
         });
 
@@ -708,7 +710,7 @@ public class MainActivity extends AppCompatActivity
 //                    Log.d("Content",conts[0]+"," +conts[1]+","+conts[2]+","+conts[3]);
                     Matcher matcher = pattern.matcher(conts[0]);
                     if(matcher.find()){
-                        int min = 1,max = 18;
+                        int min, max;
                         min = Integer.parseInt(matcher.group(1));
                         max = Integer.parseInt(matcher.group(2));
                         //如果选择的周数在课程周数范围内（非单双周课程)
@@ -985,7 +987,7 @@ public class MainActivity extends AppCompatActivity
 //                RelativeLayout resultView = (RelativeLayout) view.findViewById(R.id.result_view);
                 //WebView resultWebview = (WebView) findViewById(R.id.result_web_view);
 
-                resultJson = msg.getData().getString("json");
+                String resultJson = msg.getData().getString("json");
                 Log.d("LLAALLAA", resultJson);
                 GradeChartTab gradeChartTab =GradeChartTab.newInstance(0);
                 GradeListTab gradeListTab = new GradeListTab();

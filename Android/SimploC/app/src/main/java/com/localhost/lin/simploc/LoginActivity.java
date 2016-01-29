@@ -3,29 +3,18 @@ package com.localhost.lin.simploc;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.content.ContentValues;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.app.LoaderManager.LoaderCallbacks;
 
-import android.content.CursorLoader;
-import android.content.Loader;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.AsyncTask;
 
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -53,15 +42,11 @@ import org.apache.http.util.EntityUtilsHC4;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.litepal.crud.DataSupport;
-import org.litepal.tablemanager.Connector;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
-
-import static android.Manifest.permission.READ_CONTACTS;
 
 /**
  * A login screen that offers login via email/password.
@@ -330,13 +315,13 @@ public class LoginActivity extends AppCompatActivity{
      */
     public class UserLoginTask extends AsyncTask<Void, Void, Integer> {
 
-        private final String mEmail;
+        private final String mNumber;
         private final String mPassword;
         private final String mCheckCode;
-        private String mXmStr;
+        private String mXmStr, mOpenId;
 
         UserLoginTask(String email, String password,String checkCode) {
-            mEmail = email;
+            mNumber = email;
             mPassword = password;
             mCheckCode = checkCode;
         }
@@ -348,12 +333,12 @@ public class LoginActivity extends AppCompatActivity{
             String result = null;
             String canLogin="";
             CloseableHttpClient netManager = HttpClients.createDefault();
-            HttpGetHC4 tryLoginGetRequest = new HttpGetHC4(NetworkThreads.TRY_LOGIN_URL + "?number=" + mEmail +
+            HttpGetHC4 tryLoginGetRequest = new HttpGetHC4(NetworkThreads.TRY_LOGIN_URL + "?number=" + mNumber +
                     "&password=" + mPassword + "&checkCode="
                     + mCheckCode + "&viewState=" + loginViewState
                     + "&cookie=" + loginCookie);
             NetworkThreads.loginInfo.setCheckCode(mCheckCode);
-            NetworkThreads.loginInfo.setNumber(mEmail);
+            NetworkThreads.loginInfo.setNumber(mNumber);
             NetworkThreads.loginInfo.setPassword(mPassword);
             try {
                 result = EntityUtilsHC4.toString(netManager.execute(tryLoginGetRequest).getEntity(),"gb2312");
@@ -361,8 +346,10 @@ public class LoginActivity extends AppCompatActivity{
                 e.printStackTrace();
             }
             try {
-                canLogin = new JSONObject(result).getJSONObject("TRY").get("lgRstCode").toString();
-                mXmStr = new JSONObject(result).getJSONObject("TRY").get("xm").toString();
+                JSONObject rsJson = new JSONObject(result).getJSONObject("TRY");
+                canLogin = rsJson.get("lgRstCode").toString();
+                mXmStr = rsJson.get("xm").toString();
+                mOpenId = rsJson.get("openAppId").toString();
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -375,14 +362,14 @@ public class LoginActivity extends AppCompatActivity{
             }
 
             //LitePal测试代码
-            if(DataSupport.where("number=?",mEmail).find(UserInfo.class).size() == 0){
+            if(DataSupport.where("number=?", mNumber).find(UserInfo.class).size() == 0){
                 UserInfo userInfo = new UserInfo();
                 LoginLog loginLog = new LoginLog();
 
                 loginLog.setLastLogin(new SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date()));
                 loginLog.setHadLogin("1");
                 loginLog.setShowAvator(false);
-                userInfo.setNumber(mEmail);
+                userInfo.setNumber(mNumber);
                 userInfo.setPassword(mPassword);
                 userInfo.setCookie(loginCookie);
                 userInfo.setName(mXmStr);
@@ -395,16 +382,16 @@ public class LoginActivity extends AppCompatActivity{
                 loginLog.setLastLogin(new SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date()));
                 userInfo.setCookie(loginCookie);
                 userInfo.setLoginLog(loginLog);
-                userInfo.updateAll("number=?",mEmail);
+                userInfo.updateAll("number=?", mNumber);
             }
 
             //将用户登录信息存入数据库
-            if(sqLiteOperation.find(mEmail) == null){
-                sqLiteOperation.insertUser(mEmail,mPassword,loginCookie,mXmStr);
-                sqLiteOperation.insertLog(mEmail,new SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date()),"1");
+            if(sqLiteOperation.find(mNumber) == null){
+                sqLiteOperation.insertUser(mNumber,mPassword,loginCookie,mXmStr);
+                sqLiteOperation.insertLog(mNumber,new SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date()),"1");
             }else {
                 Log.d("SQLITE Update:","cookie--"+loginCookie);
-                sqLiteOperation.updateLoginInfo(mEmail, new SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date()), loginCookie);
+                sqLiteOperation.updateLoginInfo(mNumber, new SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date()), loginCookie);
             }
 
             return 1;
@@ -415,6 +402,7 @@ public class LoginActivity extends AppCompatActivity{
             mAuthTask = null;
 
             if (success == 1) {     //1: 登录成功
+                sqLiteOperation.updateOpenId(mNumber, mOpenId);
                 Intent intent = new Intent();
                 intent.setClass(LoginActivity.this,MainActivity.class);
                 startActivity(intent);

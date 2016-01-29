@@ -113,39 +113,39 @@ public class NetworkThreads {
         }
     };
 
-    public class TryLoginThread implements Runnable{
-        private String num = null,passwd = null,checkC;
-        public TryLoginThread(String number,String password,String checkCode){
-            num = number;
-            passwd = password;
-            checkC = checkCode;
-        }
-        @Override
-        public void run() {
-            CloseableHttpClient  netManager = HttpClients.createDefault();
-            HttpGetHC4 tryLoginGetRequest = new HttpGetHC4(TRY_LOGIN_URL + "?number=" + num +
-                                                        "&password=" + passwd + "&checkCode="
-                                                        + checkC + "&viewState=" + loginInfo.getViewState()
-                                                        + "&cookie=" + loginInfo.getCookie());
-            String result = null;
-            loginInfo.setCheckCode(checkC);
-            loginInfo.setNumber(num);
-            loginInfo.setPassword(passwd);
-            try {
-                result = EntityUtilsHC4.toString(netManager.execute(tryLoginGetRequest).getEntity());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            Bundle bundle = new Bundle();
-            bundle.putString("canLogin",result);
-
-            Message msg = mHandler.obtainMessage();
-            msg.obj = "tryLoginEnd";
-            msg.setData(bundle);
-            mHandler.sendMessage(msg);
-        }
-    }
+//    public class TryLoginThread implements Runnable{
+//        private String num = null,passwd = null,checkC;
+//        public TryLoginThread(String number,String password,String checkCode){
+//            num = number;
+//            passwd = password;
+//            checkC = checkCode;
+//        }
+//        @Override
+//        public void run() {
+//            CloseableHttpClient  netManager = HttpClients.createDefault();
+//            HttpGetHC4 tryLoginGetRequest = new HttpGetHC4(TRY_LOGIN_URL + "?number=" + num +
+//                                                        "&password=" + passwd + "&checkCode="
+//                                                        + checkC + "&viewState=" + loginInfo.getViewState()
+//                                                        + "&cookie=" + loginInfo.getCookie());
+//            String result = null;
+//            loginInfo.setCheckCode(checkC);
+//            loginInfo.setNumber(num);
+//            loginInfo.setPassword(passwd);
+//            try {
+//                result = EntityUtilsHC4.toString(netManager.execute(tryLoginGetRequest).getEntity());
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//
+//            Bundle bundle = new Bundle();
+//            bundle.putString("canLogin",result);
+//
+//            Message msg = mHandler.obtainMessage();
+//            msg.obj = "tryLoginEnd";
+//            msg.setData(bundle);
+//            mHandler.sendMessage(msg);
+//        }
+//    }
 
     public class QueryGradeThread implements Runnable{
         private String xnStr = null,xqStr = null;

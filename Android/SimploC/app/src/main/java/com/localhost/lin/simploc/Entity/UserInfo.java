@@ -15,6 +15,16 @@ public class UserInfo extends DataSupport{
     private String name;
     private LoginLog loginLog;
 
+    public String getOpenAppId() {
+        return openAppId;
+    }
+
+    public void setOpenAppId(String openAppId) {
+        this.openAppId = openAppId;
+    }
+
+    private String openAppId;
+
     public LoginLog getLoginLog() {
         return loginLog;
     }
