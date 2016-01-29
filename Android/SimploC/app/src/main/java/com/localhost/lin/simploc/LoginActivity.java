@@ -328,7 +328,7 @@ public class LoginActivity extends AppCompatActivity{
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
+    public class UserLoginTask extends AsyncTask<Void, Void, Integer> {
 
         private final String mEmail;
         private final String mPassword;
@@ -342,7 +342,7 @@ public class LoginActivity extends AppCompatActivity{
         }
 
         @Override
-        protected Boolean doInBackground(Void... params) {
+        protected Integer doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
 
             String result = null;
@@ -361,7 +361,7 @@ public class LoginActivity extends AppCompatActivity{
                 e.printStackTrace();
             }
             try {
-                canLogin = new JSONObject(result).getJSONObject("TRY").get("can").toString();
+                canLogin = new JSONObject(result).getJSONObject("TRY").get("lgRstCode").toString();
                 mXmStr = new JSONObject(result).getJSONObject("TRY").get("xm").toString();
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -369,7 +369,9 @@ public class LoginActivity extends AppCompatActivity{
 
             NetworkThreads.loginInfo.setXm(mXmStr);
             if(canLogin.equals("0")){
-                return false;
+                return 0;
+            }else if(canLogin.equals("2")){
+                return 2;
             }
 
             //LitePal测试代码
@@ -405,23 +407,28 @@ public class LoginActivity extends AppCompatActivity{
                 sqLiteOperation.updateLoginInfo(mEmail, new SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date()), loginCookie);
             }
 
-            return true;
+            return 1;
         }
 
         @Override
-        protected void onPostExecute(final Boolean success) {
+        protected void onPostExecute(final Integer success) {
             mAuthTask = null;
 
-            if (success) {
+            if (success == 1) {     //1: 登录成功
                 Intent intent = new Intent();
                 intent.setClass(LoginActivity.this,MainActivity.class);
                 startActivity(intent);
                 finish();
-            } else {
+            }else if(success == 2) {    //2: 验证码错误
+                showProgress(false);
+                new Thread(threads.new RecvLoginPageThread()).start();
+                mCheckCodeView.setError(getString(R.string.error_maybe_invalid_checkcode));
+                mCheckCodeView.requestFocus();
+            }
+            else {                      //0: 密码错误
                 showProgress(false);
                 new Thread(threads.new RecvLoginPageThread()).start();
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mCheckCodeView.setError(getString(R.string.error_maybe_invalid_checkcode));
                 mPasswordView.requestFocus();
             }
         }

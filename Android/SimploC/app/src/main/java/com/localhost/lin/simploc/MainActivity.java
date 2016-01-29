@@ -766,7 +766,7 @@ public class MainActivity extends AppCompatActivity
                 View v = (View)getLayoutInflater().inflate(R.layout.course_table_detail,null);
                 ((TextView)v.findViewById(R.id.course_table_detail_name)).setText("课程：\t" + showData[1]);
                 ((TextView)v.findViewById(R.id.course_table_detail_teacher)).setText("教师：\t" + showData[2]);
-                //if(showData.length >= 5)
+                if(showData.length >= 4)
                     ((TextView)v.findViewById(R.id.course_table_detail_addr)).setText("教室：\t" + showData[3]);
                 new AlertDialog.Builder(MainActivity.this).setTitle("课程详情").setView(v).show();
             }
