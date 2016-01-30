@@ -219,7 +219,8 @@ public class MainActivity extends AppCompatActivity
             public void onSuccess(int i, Header[] headers, String s) {
                 String retData = null;
                 retData = JsonUtils.getNodeString(s, "ZY");//获取专业信息
-                nameText.setText(NetworkThreads.loginInfo.getXm() + "\t\t" + retData);
+                //nameText.setText(NetworkThreads.loginInfo.getXm() + "\t\t" + retData);
+                nameText.setText(userInfo.getName() + "\t\t" + retData);
             }
         });
     }
@@ -316,12 +317,13 @@ public class MainActivity extends AppCompatActivity
                     .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            Intent intent = new Intent();
-                            intent.setClass(MainActivity.this,LoginActivity.class);
+//                            Intent intent = new Intent();
+//                            intent.setClass(MainActivity.this,LoginActivity.class);
                             //设置数据库中登录状态为登出
-                            sqLiteOperation.updateLoginStatus(NetworkThreads.loginInfo.getNumber(),"0");
-                            startActivity(intent);
-                            finish();
+//                            sqLiteOperation.updateLoginStatus(NetworkThreads.loginInfo.getNumber(),"0");
+//                            startActivity(intent);
+//                            finish();
+                            logout();
                         }
                     }).setNegativeButton("取消", new DialogInterface.OnClickListener() {
                         @Override
@@ -370,7 +372,7 @@ public class MainActivity extends AppCompatActivity
 //                put("number",userInfo.getNumber());
 //                put("xm",userInfo.getName());
 //                put("cookie",userInfo.getCookie());
-                put("openUserId", userInfo.getOpenAppId());
+                put(NetworkUtils.RQ_K_OPENID, userInfo.getOpenAppId());
             }
         });
 
@@ -477,9 +479,10 @@ public class MainActivity extends AppCompatActivity
         AsyncHttpClient networkManager = new AsyncHttpClient();
         RequestParams params = new RequestParams(new HashMap<String,String>(){
             {
-                put("number",userInfo.getNumber());
-                put("name",userInfo.getName());
-                put("cookie",userInfo.getCookie());
+//                put("number",userInfo.getNumber());
+//                put("name",userInfo.getName());
+//                put("cookie",userInfo.getCookie());
+                put(NetworkUtils.RQ_K_OPENID, userInfo.getOpenAppId());
                 put("xn",xn);
                 put("xq",xq);
                 put("week",week);
@@ -522,9 +525,10 @@ public class MainActivity extends AppCompatActivity
         AsyncHttpClient networkManager = new AsyncHttpClient();
         RequestParams params = new RequestParams(new HashMap<String,String>(){
             {
-                put("number",userInfo.getNumber());
-                put("name",userInfo.getName());
-                put("cookie",userInfo.getCookie());
+//                put("number",userInfo.getNumber());
+//                put("name",userInfo.getName());
+//                put("cookie",userInfo.getCookie());
+                put(NetworkUtils.RQ_K_OPENID, userInfo.getOpenAppId());
                 put("xn",xn);
                 put("xq",xq);
             }
@@ -559,9 +563,10 @@ public class MainActivity extends AppCompatActivity
         AsyncHttpClient networkManager = new AsyncHttpClient();
         RequestParams params = new RequestParams(new HashMap<String,String>(){
             {
-                put("number",userInfo.getNumber());
-                put("name",userInfo.getName());
-                put("cookie",userInfo.getCookie());
+//                put("number",userInfo.getNumber());
+//                put("name",userInfo.getName());
+//                put("cookie",userInfo.getCookie());
+                put(NetworkUtils.RQ_K_OPENID, userInfo.getOpenAppId());
             }
         });
         networkManager.get(NetworkUtils.CET_URL, params, new TextHttpResponseHandler() {
@@ -604,9 +609,10 @@ public class MainActivity extends AppCompatActivity
         AsyncHttpClient networkManager = new AsyncHttpClient();
         RequestParams params = new RequestParams(new HashMap<String,String>(){
             {
-                put("number",userInfo.getNumber());
-                put("name",userInfo.getName());
-                put("cookie",userInfo.getCookie());
+//                put("number",userInfo.getNumber());
+//                put("name",userInfo.getName());
+//                put("cookie",userInfo.getCookie());
+                put(NetworkUtils.RQ_K_OPENID, userInfo.getOpenAppId());
             }
         });
         final ProgressDialog dialog = ProgressDialog.show(MainActivity.this,"一键评价","一键评价进行中...");
@@ -885,6 +891,31 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    private void logout(){
+        AsyncHttpClient httpClient = new AsyncHttpClient();
+        RequestParams params = new RequestParams(){
+            {
+                put(NetworkUtils.RQ_K_OPENID, userInfo.getOpenAppId());
+            }
+        };
+        httpClient.get(NetworkUtils.LOGOUT, params, new TextHttpResponseHandler() {
+            @Override
+            public void onFailure(int i, Header[] headers, String s, Throwable throwable) {
+
+            }
+
+            @Override
+            public void onSuccess(int i, Header[] headers, String s) {
+                Intent intent = new Intent();
+                intent.setClass(MainActivity.this,LoginActivity.class);
+                //设置数据库中登录状态为登出
+                sqLiteOperation.updateLoginStatus(NetworkThreads.loginInfo.getNumber(),"0");
+                startActivity(intent);
+                finish();
+            }
+        });
+    }
+
     //后台获取头像照片的任务
     private class AvatarGetTask extends AsyncTask<Void,Void,Bitmap>{
         private String mNumber;
@@ -903,7 +934,7 @@ public class MainActivity extends AppCompatActivity
             /*
              *   2015-10-16 从服务端获取头像改为直接从网站获取头像
              */
-            HttpGetHC4 gradeQueryGetRequest = new HttpGetHC4("http://jwgl.fjnu.edu.cn/readimagexs.aspx?xh=" + mNumber);
+            HttpGetHC4 gradeQueryGetRequest = new HttpGetHC4("http://jwgl.fjnu.edu.cn/readimagexs.aspx?xh=" + userInfo.getName());
             gradeQueryGetRequest.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
             gradeQueryGetRequest.setHeader("Connection", "Keep-Alive");
             gradeQueryGetRequest.setHeader("User-Agent",
@@ -945,10 +976,11 @@ public class MainActivity extends AppCompatActivity
         if(requestCode == SETTING_REQUEST_CODE){//设置
             //如果要求（删除用户后）登出：
             if(resultCode == RESULT_OK && data.getStringExtra("action").equals("logout")){
-                Intent intent = new Intent();
-                intent.setClass(MainActivity.this, LoginActivity.class);
-                startActivity(intent);
-                finish();
+//                Intent intent = new Intent();
+//                intent.setClass(MainActivity.this, LoginActivity.class);
+//                startActivity(intent);
+//                finish();
+                logout();
             }else if(resultCode == RESULT_OK && data.getStringExtra("action").equals("refreshAvator")){
                 //获取头像图片
                 if (sqLiteOperation.queryIsShowAvator(userInfo.getNumber()))
