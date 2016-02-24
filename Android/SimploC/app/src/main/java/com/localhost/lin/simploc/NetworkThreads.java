@@ -162,7 +162,7 @@ public class NetworkThreads {
             String[] loginMsg = mSqLiteOperation.find(loginInfo.getNumber());
             HttpGetHC4 gradeQueryGetRequest = new HttpGetHC4(QUERY_URL + "?number=" + loginMsg[1] +
                                             "&cookie=" + loginMsg[3] + "&xn=" + xnStr +"&xq=" + xqStr
-                                            + "&xm=" + loginMsg[4]);
+                                            + "&xm=" + loginMsg[4] + "&openUserId=" + loginMsg[8]);
             String result = null;
             //HashMap<String,String> gradeList = new HashMap<String,String>();
             try {

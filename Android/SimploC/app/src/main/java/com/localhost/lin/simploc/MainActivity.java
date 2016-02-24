@@ -217,10 +217,10 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onSuccess(int i, Header[] headers, String s) {
-                String retData = null;
-                retData = JsonUtils.getNodeString(s, "ZY");//获取专业信息
+                String majorText = null;
+                majorText = JsonUtils.getNodeString(s, "ZY");//获取专业信息
                 //nameText.setText(NetworkThreads.loginInfo.getXm() + "\t\t" + retData);
-                nameText.setText(userInfo.getName() + "\t\t" + retData);
+                nameText.setText(userInfo.getName() + "\t\t" + majorText);
             }
         });
     }
@@ -934,7 +934,7 @@ public class MainActivity extends AppCompatActivity
             /*
              *   2015-10-16 从服务端获取头像改为直接从网站获取头像
              */
-            HttpGetHC4 gradeQueryGetRequest = new HttpGetHC4("http://jwgl.fjnu.edu.cn/readimagexs.aspx?xh=" + userInfo.getName());
+            HttpGetHC4 gradeQueryGetRequest = new HttpGetHC4("http://jwgl.fjnu.edu.cn/readimagexs.aspx?xh=" + userInfo.getNumber());
             gradeQueryGetRequest.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
             gradeQueryGetRequest.setHeader("Connection", "Keep-Alive");
             gradeQueryGetRequest.setHeader("User-Agent",
