@@ -156,12 +156,14 @@ public class LoginActivity extends AppCompatActivity{
 //            return;
 //        }
         //如果当天已登录，则自动登陆
+
+        //替换为向服务器请求验证，不必局限于当天登录，只验证已登录用户
         if( number != null){
             String[] data = sqLiteOperation.find(number);
             NetworkThreads.loginInfo.setNumber(data[1]);
             NetworkThreads.loginInfo.setCookie(data[3]);
             NetworkThreads.loginInfo.setXm(data[4]);
-            startActivity(new Intent().setClass(LoginActivity.this,MainActivity.class));
+            startActivity(new Intent().setClass(LoginActivity.this,SessionVerifyActivity.class));
             finish();
         }else{
             List<String> list = sqLiteOperation.getAllNumber();

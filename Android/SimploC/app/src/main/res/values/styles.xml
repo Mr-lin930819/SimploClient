@@ -18,17 +18,18 @@
     </style>
 
 
-
     <style name="BlueAppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
+
     <style name="GreenAppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
 
@@ -53,4 +54,8 @@
     <style name="MyTextAppearance.ListItem" parent="Widget">
         <item name="android:textSize">18sp</item>
     </style>
+
+    <style name="BlueAppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="BlueAppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 </resources>

@@ -53,8 +53,10 @@ public class SQLiteOperation {
     public String findLoginUser(String date){
         SQLiteDatabase database = databaseOperator.getReadableDatabase();
         String retNumber;
+//        Cursor cursor = database.rawQuery("select userInfo.number from userInfo,loginLog " +
+//                "where userInfo.id=loginLog.id and loginLog.hadLogin=1 and loginLog.lastLogin=?",new String[]{date});
         Cursor cursor = database.rawQuery("select userInfo.number from userInfo,loginLog " +
-                "where userInfo.id=loginLog.id and loginLog.hadLogin=1 and loginLog.lastLogin=?",new String[]{date});
+                "where userInfo.id=loginLog.id and loginLog.hadLogin=1",new String[]{ });
         if(cursor.moveToFirst()){
             retNumber = cursor.getString(0);
             return retNumber;

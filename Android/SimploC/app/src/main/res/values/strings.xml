@@ -25,5 +25,6 @@
     </string>
     <string name="title_activity_settings">设置</string>
     <string name="set_is_show_avator">显示头像</string>
+    <string name="title_activity_session_verify">SessionVerifyActivity</string>
 
 </resources>

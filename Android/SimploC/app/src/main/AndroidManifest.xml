@@ -10,30 +10,31 @@
     <uses-permission android:name="android.permission.READ_CONTACTS" />
 
     <application
+        android:name=".CustomApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/BlueAppTheme"
-        android:name=".CustomApplication">
+        android:theme="@style/BlueAppTheme">
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
-            android:theme="@style/BlueAppTheme.NoActionBar" >
-        </activity>
+            android:theme="@style/BlueAppTheme.NoActionBar"></activity>
         <activity
             android:name=".LoginActivity"
-            android:label="@string/title_activity_login" >
+            android:label="@string/title_activity_login">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".SettingActivity" >
-        </activity>
-        <activity android:name=".SelectTimeActivity" >
-        </activity>
+        <activity android:name=".SettingActivity"></activity>
+        <activity android:name=".SelectTimeActivity"></activity>
+        <activity
+            android:name=".SessionVerifyActivity"
+            android:label="@string/title_activity_session_verify"
+            android:theme="@style/BlueAppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>
