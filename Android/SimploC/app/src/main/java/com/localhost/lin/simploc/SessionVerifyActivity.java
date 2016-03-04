@@ -32,7 +32,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
+import java.util.Locale;
 
 import cz.msebera.android.httpclient.Header;
 
@@ -49,7 +51,7 @@ public class SessionVerifyActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         //先进行验证，身份过期了再进行接下去的操作，否则跳转到主界面
         sqLiteOperation = new SQLiteOperation(this);
-        userInfo = sqLiteOperation.findUser(NetworkThreads.loginInfo.getNumber());
+        userInfo = sqLiteOperation.findUser(sqLiteOperation.findLoginUser());
         setContentView(R.layout.activity_session_verify);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -86,6 +88,7 @@ public class SessionVerifyActivity extends AppCompatActivity {
                             e.printStackTrace();
                         }
                         procBox.dismiss();
+                        Log.d("SessionVerify", rstText);
                         if (rstText.equals("SUCCE")) {          //身份信息有效
                             processSuccess();
                         } else if (rstText.equals("ERRVR")) {   //验证码错误
@@ -144,6 +147,8 @@ public class SessionVerifyActivity extends AppCompatActivity {
     }
 
     private void processSuccess(){
+        sqLiteOperation.updateLoginInfo(userInfo.getNumber(),
+                new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new java.util.Date()), mCookie);
         Intent intent = new Intent();
         intent.setClass(SessionVerifyActivity.this, MainActivity.class);
         startActivity(intent);
@@ -151,16 +156,16 @@ public class SessionVerifyActivity extends AppCompatActivity {
     }
 
     private void processNetErr(){
-        Toast.makeText(SessionVerifyActivity.this, "服务器错误", Toast.LENGTH_LONG);
+        Toast.makeText(SessionVerifyActivity.this, "服务器错误", Toast.LENGTH_LONG).show();
     }
 
     private void processVerifyError(){
+        processExpire();
         checkInput.setError("验证码输入错误！");
         checkInput.requestFocus();
     }
 
     private void processExpire(){
-//        processSuccess();
         new LoadCheckCode().execute((Void) null);    //载入验证码
     }
 
@@ -175,7 +180,6 @@ public class SessionVerifyActivity extends AppCompatActivity {
             String loginPage = "";
             byte[] checkImg = null;
             HashMap<String,String> tmpData = null;
-            Bundle loginBundle = new Bundle();
 
             /*先获取Cookie和ViewState*/
             try {
@@ -184,23 +188,13 @@ public class SessionVerifyActivity extends AppCompatActivity {
                 tmpData = JsonUtils.convJson2Map(loginPage, "loginPage");
                 Log.d("SessionVerify", "获得登录信息");
                 if(tmpData == null){
-//                    msg.obj = "runError";
-//                    loginBundle.putString("info", "LoginPage");
-//                    msg.setData(loginBundle);
-//                    try {
-//                        Thread.currentThread().sleep(2500);
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
-//                    mHandler.sendMessage(msg);
-//                    return;
                     return null;
                 }
 
                 //根据之前的Cookie获取验证码图片
                 HttpGetHC4 checkImgGetRequest = new HttpGetHC4(NetworkUtils.C_IMG_URL + "?cookie=" + tmpData.get("cookie"));
                 checkImg   = EntityUtilsHC4.toByteArray(netManager.execute(checkImgGetRequest).getEntity());
-                Log.d("SessionVerify", "获得验证码图片");
+                Log.d("SessionVerify", "获得验证码图片" + tmpData.get("viewState") + "   " +tmpData.get("cookie"));
             } catch (IOException e) {
                 e.printStackTrace();
             }finally {
@@ -210,29 +204,21 @@ public class SessionVerifyActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
             }
-
-            mViewState = tmpData.get("viewState");
-            mCookie = tmpData.get("cookie");
-//
-//            loginBundle.putString("viewState", tmpData.get("viewState"));
-//            loginBundle.putString("cookie",tmpData.get("cookie"));
-            loginBundle.putByteArray("checkImg", checkImg);
+            if(tmpData != null) {
+                mViewState = tmpData.get("viewState");
+                mCookie = tmpData.get("cookie");
+            }
             return checkImg;
         }
 
         @Override
         protected void onPostExecute(byte[] imgData) {
             super.onPostExecute(imgData);
-            if(imgData == null){
-                return;
-            }else{
-                //设置验证码的显示
-                ImageView iv = (ImageView) findViewById(R.id.re_login_check_img);
-//                byte[] imgRes = bundle.getByteArray("checkImg");
-                if (imgData != null) {
-                    Bitmap bitmap = BitmapFactory.decodeByteArray(imgData, 0, imgData.length);
-                    iv.setImageBitmap(bitmap);
-                }
+            //设置验证码的显示
+            ImageView iv = (ImageView) findViewById(R.id.re_login_check_img);
+            if (imgData != null) {
+                Bitmap bitmap = BitmapFactory.decodeByteArray(imgData, 0, imgData.length);
+                iv.setImageBitmap(bitmap);
             }
         }
     }

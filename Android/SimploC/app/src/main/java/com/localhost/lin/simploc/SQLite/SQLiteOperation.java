@@ -47,10 +47,9 @@ public class SQLiteOperation {
 
     /**
      * 获取当天已登录用户信息
-     * @param date  当前时间
      * @return      已登录用户学号
      */
-    public String findLoginUser(String date){
+    public String findLoginUser(){
         SQLiteDatabase database = databaseOperator.getReadableDatabase();
         String retNumber;
 //        Cursor cursor = database.rawQuery("select userInfo.number from userInfo,loginLog " +

@@ -150,8 +150,8 @@ public class LoginActivity extends AppCompatActivity{
     }
 
     private void populateAutoComplete() {
-        String nowDate = new SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date());
-        String number = sqLiteOperation.findLoginUser(nowDate);
+        //String nowDate = new SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date());
+        String number = sqLiteOperation.findLoginUser();
 //        if (!mayRequestContacts()) {
 //            return;
 //        }
