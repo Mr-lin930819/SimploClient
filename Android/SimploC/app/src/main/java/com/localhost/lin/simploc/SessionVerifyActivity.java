@@ -1,5 +1,6 @@
 package com.localhost.lin.simploc;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -8,6 +9,7 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -45,12 +47,10 @@ public class SessionVerifyActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_session_verify);
-
         //先进行验证，身份过期了再进行接下去的操作，否则跳转到主界面
         sqLiteOperation = new SQLiteOperation(this);
         userInfo = sqLiteOperation.findUser(NetworkThreads.loginInfo.getNumber());
-        verifySession(userInfo.getOpenAppId());
+        setContentView(R.layout.activity_session_verify);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -59,8 +59,8 @@ public class SessionVerifyActivity extends AppCompatActivity {
         confirmBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AsyncHttpClient reloginClient = new AsyncHttpClient();
                 final AlertDialog procBox = new AlertDialog.Builder(SessionVerifyActivity.this).setTitle("重新登录").setMessage("正在重新登录...").show();
+                AsyncHttpClient reloginClient = new AsyncHttpClient();
                 reloginClient.get(NetworkUtils.RE_LOGIN, new RequestParams(new HashMap<String, String>() {
                     {
                         put(NetworkUtils.RQ_K_OPENID, userInfo.getOpenAppId());
@@ -90,14 +90,20 @@ public class SessionVerifyActivity extends AppCompatActivity {
                             processSuccess();
                         } else if (rstText.equals("ERRVR")) {   //验证码错误
                             processVerifyError();
+                        } else if (rstText.equals("ERRSV")) {   //服务器内部错误
+                            processNetErr();
                         }
                     }
                 });
             }
         });
+
+        verifySession(userInfo.getOpenAppId());
     }
 
     private void verifySession(final String openID){
+        final ProgressDialog verifyDialog = ProgressDialog.show(SessionVerifyActivity.this,
+                "登录验证", "正在验证用户信息");
         AsyncHttpClient client = new AsyncHttpClient();
         client.get(NetworkUtils.SESSION_VERIFY, new RequestParams(new HashMap<String, String>() {
             {
@@ -113,6 +119,7 @@ public class SessionVerifyActivity extends AppCompatActivity {
             @Override
             public void onFailure(int i, Header[] headers, String s, Throwable throwable) {
                 processNetErr();
+                verifyDialog.dismiss();
             }
 
             @Override
@@ -128,8 +135,10 @@ public class SessionVerifyActivity extends AppCompatActivity {
                 if (rstText.equals("SUCCE")) {          //身份信息有效
                     processSuccess();
                 } else if (rstText.equals("ERREP")) {   //身份信息过期
+                    Log.d("SessionVerify", "验证身份");
                     processExpire();
                 }
+                verifyDialog.dismiss();
             }
         });
     }
@@ -173,6 +182,7 @@ public class SessionVerifyActivity extends AppCompatActivity {
                 loginPage   = EntityUtilsHC4.toString(netManager.execute(loginGetRequest).getEntity());
                 //获得单次查询会话的Cookie和ViewState,保存。
                 tmpData = JsonUtils.convJson2Map(loginPage, "loginPage");
+                Log.d("SessionVerify", "获得登录信息");
                 if(tmpData == null){
 //                    msg.obj = "runError";
 //                    loginBundle.putString("info", "LoginPage");
@@ -190,6 +200,7 @@ public class SessionVerifyActivity extends AppCompatActivity {
                 //根据之前的Cookie获取验证码图片
                 HttpGetHC4 checkImgGetRequest = new HttpGetHC4(NetworkUtils.C_IMG_URL + "?cookie=" + tmpData.get("cookie"));
                 checkImg   = EntityUtilsHC4.toByteArray(netManager.execute(checkImgGetRequest).getEntity());
+                Log.d("SessionVerify", "获得验证码图片");
             } catch (IOException e) {
                 e.printStackTrace();
             }finally {
