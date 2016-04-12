@@ -793,7 +793,7 @@ public class MainActivity extends AppCompatActivity
      */
     private void showExamTimeTable(String jsonContent){
         if(jsonContent == null || jsonContent.equals("")) {
-            Toast.makeText(MainActivity.this, "服务器错误", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "从服务器收到的数据有误", Toast.LENGTH_SHORT).show();
             return;
         }
         examList = (ListView)findViewById(R.id.main_info_list);
