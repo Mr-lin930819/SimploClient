@@ -792,8 +792,19 @@ public class MainActivity extends AppCompatActivity
      * @param jsonContent 传入的Json数据
      */
     private void showExamTimeTable(String jsonContent){
+        if(jsonContent == null || jsonContent.equals("")) {
+            Toast.makeText(MainActivity.this, "服务器错误", Toast.LENGTH_SHORT).show();
+            return;
+        }
         examList = (ListView)findViewById(R.id.main_info_list);
-        ArrayList<ArrayList<String>> rawData = JsonUtils.convJson2StringLists(jsonContent);
+        ArrayList<ArrayList<String>> rawData;
+        try {
+            rawData = JsonUtils.convJson2StringLists(jsonContent);
+        } catch (NullPointerException e) {
+            Toast.makeText(MainActivity.this, "接收数据有误", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         final ArrayList<Map<String,String>> listData = new ArrayList<Map<String, String>>();//List表格数据
         getSupportActionBar().setTitle("考试时间表");
         getSupportActionBar().setSubtitle(new SimpleDateFormat("yyyy年MM月dd日",Locale.CHINA).format(new java.util.Date()));
