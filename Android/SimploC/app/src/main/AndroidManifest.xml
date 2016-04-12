@@ -19,7 +19,7 @@
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
-            android:theme="@style/BlueAppTheme.NoActionBar"></activity>
+            android:theme="@style/BlueAppTheme.NoActionBar" />
         <activity
             android:name=".LoginActivity"
             android:label="@string/title_activity_login">
@@ -29,12 +29,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".SettingActivity"></activity>
-        <activity android:name=".SelectTimeActivity"></activity>
+        <activity android:name=".SettingActivity" />
+        <activity android:name=".SelectTimeActivity" />
         <activity
             android:name=".SessionVerifyActivity"
             android:label="@string/title_activity_session_verify"
-            android:theme="@style/BlueAppTheme.NoActionBar"></activity>
+            android:theme="@style/BlueAppTheme.NoActionBar" />
+        <activity android:name=".CreditStatActivity"></activity>
     </application>
 
 </manifest>
