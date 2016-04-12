@@ -11,7 +11,11 @@ import android.widget.TextView;
 
 import com.localhost.lin.simploc.R;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.w3c.dom.Text;
+
+import java.util.ArrayList;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -71,8 +75,29 @@ public class GPAFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_gpa, container, false);
         TextView gpaTotal = (TextView)view.findViewById(R.id.tv_gpa_total);
         TextView creditTotal = (TextView)view.findViewById(R.id.tv_credit_total);
-        gpaTotal.setText(mParam1);
-        creditTotal.setText(mParam2);
+        ArrayList<String> displayData = new ArrayList<>();
+        StringBuffer displayString = new StringBuffer();
+        try {
+            JSONObject gpa = new JSONObject(mParam1),
+                    credit = new JSONObject(mParam2);
+            displayData.add(gpa.getString("students"));
+            displayData.add("\n");
+            displayData.add(gpa.getString("totalGPA"));
+            displayData.add(gpa.getString("averageGPA"));
+            displayData.add("");
+            displayData.add("所选学分：" + credit.getString("select"));
+            displayData.add("获得学分：" + credit.getString("get"));
+            displayData.add("重修学分：" + credit.getString("revamp"));
+            displayData.add("正考未通过学分：" + credit.getString("nopass"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        for (String s:displayData) {
+            displayString.append(s);
+            displayString.append("\n");
+        }
+        gpaTotal.setText(displayString.toString());
+//        creditTotal.setText(mParam2);
         return view;
     }
 

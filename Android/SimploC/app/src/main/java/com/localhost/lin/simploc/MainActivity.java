@@ -302,8 +302,11 @@ public class MainActivity extends AppCompatActivity
 //            new Thread(threads.new QueryGradeThread("2014-2015", "",sqLiteOperation)).start();
         } else if (id == R.id.nav_grade) {
             Intent intent = new Intent();
-            intent.setClass(MainActivity.this, SelectTimeActivity.class);
-            startActivityForResult(intent, CUSTOM_QUERY_REQUEST_CODE);
+            //intent.setClass(MainActivity.this, SelectTimeActivity.class);
+            //startActivityForResult(intent, CUSTOM_QUERY_REQUEST_CODE);
+            Log.e("SS", "NI");
+            intent.setClass(MainActivity.this, CreditStatActivity.class);
+            startActivity(intent);
 
         } else if (id == R.id.query_lesson) {
             loadOption(QUERY_CTRL.QUERY_LESSON);       //弹出时间选择对话框,启动课程表查询

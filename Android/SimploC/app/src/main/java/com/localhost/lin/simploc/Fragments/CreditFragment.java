@@ -37,7 +37,7 @@ public class CreditFragment extends Fragment {
 
     // TODO: Rename and change types of parameters
     private String mParam;
-    private ArrayList<String> mColumns;
+    private static String[] mColumns = new String[]{"class", "need", "get", "nopass", "rest"};
 
     private OnFragmentInteractionListener mListener;
 
@@ -76,8 +76,8 @@ public class CreditFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_credit2, container, false);
         ListView listView = (ListView)view.findViewById(R.id.lv_credit);
         List<HashMap<String, String> > creditData = getJsonData(mParam);
-        SimpleAdapter adapter = new SimpleAdapter(view.getContext(), creditData, R.layout.list_item_credit,
-                (String[])mColumns.toArray(),
+        SimpleAdapter adapter = new SimpleAdapter(view.getContext(), creditData,
+                R.layout.list_item_credit, mColumns,
                 new int[]{R.id.credit_name, R.id.credit_need, R.id.credit_get, R.id.credit_onpass, R.id.credit_rest});
         listView.setAdapter(adapter);
         return view;
@@ -111,7 +111,6 @@ public class CreditFragment extends Fragment {
         List<HashMap<String, String> > result = new ArrayList<>();
         try {
             JSONArray credits = new JSONArray(data);
-            mColumns.clear();
             for(int i=0; i<credits.length(); i++) {
                 JSONObject jsonItem = credits.getJSONObject(i);
                 HashMap<String, String> item = new HashMap<>();
@@ -119,9 +118,6 @@ public class CreditFragment extends Fragment {
                 while (keys.hasNext()) {
                     String key = keys.next();
                     item.put(key, jsonItem.getString(key));
-                    if(i == 0) {
-                        mColumns.add(key);
-                    }
                 }
                 result.add(item);
             }

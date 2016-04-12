@@ -3,36 +3,36 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="horizontal"
-    android:weightSum="10">
+    android:weightSum="20">
     <TextView
         android:layout_width="0dp"
-        android:layout_weight="2"
+        android:layout_weight="8"
         android:layout_height="wrap_content"
         android:minHeight="45dp" android:textSize="18sp"
         android:id="@+id/credit_name"/>
     <TextView
         android:layout_width="0dp"
-        android:layout_weight="2"
+        android:layout_weight="3"
         android:layout_height="wrap_content"
         android:minHeight="45dp" android:textSize="18sp"
         android:id="@+id/credit_need"/>
 
     <TextView
         android:layout_width="0dp"
-        android:layout_weight="2"
+        android:layout_weight="3"
         android:layout_height="wrap_content"
         android:minHeight="45dp" android:textSize="18sp"
         android:id="@+id/credit_get"/>
     <TextView
         android:layout_width="0dp"
-        android:layout_weight="2"
+        android:layout_weight="3"
         android:layout_height="wrap_content"
         android:minHeight="45dp" android:textSize="18sp"
         android:id="@+id/credit_rest"/>
 
     <TextView
         android:layout_width="0dp"
-        android:layout_weight="2"
+        android:layout_weight="3"
         android:layout_height="wrap_content"
         android:minHeight="45dp" android:textSize="18sp"
         android:id="@+id/credit_onpass"/>

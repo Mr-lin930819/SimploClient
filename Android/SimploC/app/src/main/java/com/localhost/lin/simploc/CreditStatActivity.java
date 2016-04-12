@@ -2,6 +2,7 @@ package com.localhost.lin.simploc;
 
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.net.Uri;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.PagerAdapter;
@@ -9,6 +10,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import com.localhost.lin.simploc.Entity.UserEntity;
@@ -17,11 +19,10 @@ import com.localhost.lin.simploc.Fragments.GPAFragment;
 import com.localhost.lin.simploc.SQLite.SQLiteOperation;
 import com.localhost.lin.simploc.Utils.NetworkUtils;
 import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.AsyncHttpRequest;
-import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.TextHttpResponseHandler;
 import com.viewpagerindicator.PageIndicator;
+import com.viewpagerindicator.TabPageIndicator;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -33,9 +34,13 @@ import java.util.List;
 
 import cz.msebera.android.httpclient.Header;
 
-public class CreditStatActivity extends AppCompatActivity {
+/**
+ * 这个Activity用于显示查询的学分信息
+ */
+public class CreditStatActivity extends AppCompatActivity
+        implements GPAFragment.OnFragmentInteractionListener, CreditFragment.OnFragmentInteractionListener{
 
-    private PageIndicator mViewIndicator;
+    private TabPageIndicator mViewIndicator;
     private ViewPager mViewPager;
     private List<Fragment> mPagerViews = new ArrayList<>();
     private SQLiteOperation mSqLiteOperation;
@@ -54,10 +59,10 @@ public class CreditStatActivity extends AppCompatActivity {
     }
 
     private void initContentView() {
-        mViewIndicator = (PageIndicator) findViewById(R.id.indicator_credit);
+        mViewIndicator = (TabPageIndicator) findViewById(R.id.indicator_credit);
         mViewPager = (ViewPager) findViewById(R.id.view_pager_credit);
         mPagerAdapter = new FragmentPagerAdapter(getSupportFragmentManager()) {
-            private String[] titleList = new String[]{"学分绩点统计", "总学分信息", "选修课学分"};
+            private String[] titleList = new String[]{"绩点统计", "总学分信息", "选修课学分"};
             @Override
             public Fragment getItem(int position) {
                 return mPagerViews.get(position);
@@ -107,7 +112,6 @@ public class CreditStatActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
                 processDialog.dismiss();
-                mViewPager.setAdapter(mPagerAdapter);
             }
         });
     }
@@ -163,6 +167,14 @@ public class CreditStatActivity extends AppCompatActivity {
         mPagerViews.add(gpaFragment);
         mPagerViews.add(creditFragment);
         mPagerViews.add(optCreditFragment);
+        mViewPager.setAdapter(mPagerAdapter);
+        mViewIndicator.setVisibility(View.VISIBLE);
+        mViewIndicator.setViewPager(mViewPager);
     }
 
+
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+
+    }
 }
