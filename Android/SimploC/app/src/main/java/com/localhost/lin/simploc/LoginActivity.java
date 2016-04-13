@@ -354,6 +354,7 @@ public class LoginActivity extends AppCompatActivity{
                 mOpenId = rsJson.get("openAppId").toString();
             } catch (JSONException e) {
                 e.printStackTrace();
+                return 3;
             }
 
             NetworkThreads.loginInfo.setXm(mXmStr);
@@ -415,11 +416,15 @@ public class LoginActivity extends AppCompatActivity{
                 mCheckCodeView.setError(getString(R.string.error_maybe_invalid_checkcode));
                 mCheckCodeView.requestFocus();
             }
-            else {                      //0: 密码错误
+            else if(success == 0){                      //0: 密码错误
                 showProgress(false);
                 new Thread(threads.new RecvLoginPageThread()).start();
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
                 mPasswordView.requestFocus();
+            }else if(success == 3) {         //连接服务器错误
+                showProgress(false);
+                Toast.makeText(LoginActivity.this, "连接服务器错误", Toast.LENGTH_LONG)
+                        .show();
             }
         }
 
