@@ -8,24 +8,23 @@ import android.util.Log;
 import com.localhost.lin.simploc.Entity.LoginInfo;
 import com.localhost.lin.simploc.SQLite.SQLiteOperation;
 import com.localhost.lin.simploc.Utils.JsonUtils;
-import com.localhost.lin.simploc.Utils.NetworkUtils;
+import com.localhost.lin.simploc.Utils.NetworkUrlUtils;
 
 import org.apache.http.client.methods.HttpGetHC4;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtilsHC4;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 
 /**
  * Created by Lin on 2015/11/5.
+ * 该类最初用于处理所有的后台网络请求，现在大部分请求过程在Activity中使用异步网络请求库进行
+ * 因此这个类只处理获取登陆验证码、获取成绩这两个功能的网络请求
  */
 public class NetworkThreads {
-    public static final String HOST_URL           = NetworkUtils.HOST_URL;
+    public static final String HOST_URL           = NetworkUrlUtils.HOST_URL;
     //public static final String HOST_URL           = "http://192.168.1.102:8080/SimploServer";
     //public static final String HOST_URL           = "http://www.pockitcampus.com/SimploServer";
     public static final String LOGIN_URL          = HOST_URL + "/LoginPageServlet";

@@ -17,11 +17,10 @@ import com.localhost.lin.simploc.Entity.UserEntity;
 import com.localhost.lin.simploc.Fragments.CreditFragment;
 import com.localhost.lin.simploc.Fragments.GPAFragment;
 import com.localhost.lin.simploc.SQLite.SQLiteOperation;
-import com.localhost.lin.simploc.Utils.NetworkUtils;
+import com.localhost.lin.simploc.Utils.NetworkUrlUtils;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.TextHttpResponseHandler;
-import com.viewpagerindicator.PageIndicator;
 import com.viewpagerindicator.TabPageIndicator;
 
 import org.json.JSONArray;
@@ -87,7 +86,7 @@ public class CreditStatActivity extends AppCompatActivity
         final Dialog processDialog = ProgressDialog.show(CreditStatActivity.this, "学分绩点统计", "查询中...");
         creditClient.get(NetworkThreads.QUERY_URL, new RequestParams(new HashMap<String, String>() {
             {
-                put(NetworkUtils.RQ_K_OPENID, user.getOpenAppId());
+                put(NetworkUrlUtils.RQ_K_OPENID, user.getOpenAppId());
                 put("grade_function", FN_CREDIT_QUERY);
             }
         }), new TextHttpResponseHandler() {

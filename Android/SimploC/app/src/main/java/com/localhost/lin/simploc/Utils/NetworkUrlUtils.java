@@ -3,10 +3,10 @@ package com.localhost.lin.simploc.Utils;
 /**
  * Created by Lin on 2015/11/13.
  */
-public class NetworkUtils {
+public class NetworkUrlUtils {
     public static final String TEST_HOST_URL        = "http://172.21.100.58:8080/SimploServer";
     //public static final String HOST_URL             = "http://www.pockitcampus.com/SimploServer";
-    public static final String HOST_URL             ="http://172.21.100.104:8080/SimploServer";
+    public static final String HOST_URL             ="http://120.27.33.113:8080/SimploServer";
 //    public static final String TEST_HOST_URL        = "http://192.168.1.102:8080/SimploServer";
 //    public static final String HOST_URL             = "http://192.168.1.102:8080/SimploServer";
 //    public static final String HOST_URL             = "http://120.27.33.113:8080/SimploServer";

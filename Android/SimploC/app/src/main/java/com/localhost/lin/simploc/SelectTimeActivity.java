@@ -1,15 +1,12 @@
 package com.localhost.lin.simploc;
 
-import android.content.Entity;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Adapter;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
@@ -17,18 +14,11 @@ import android.widget.Toast;
 
 import com.localhost.lin.simploc.SQLite.SQLiteOperation;
 import com.localhost.lin.simploc.Utils.JsonUtils;
-import com.localhost.lin.simploc.Utils.NetworkUtils;
+import com.localhost.lin.simploc.Utils.NetworkUrlUtils;
 import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.TextHttpResponseHandler;
 
-import org.apache.http.client.methods.HttpGetHC4;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtilsHC4;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -87,7 +77,7 @@ public class SelectTimeActivity extends AppCompatActivity {
                 put("openUserId", lgMsg[8]);
             }
         });
-        httpClient.get(NetworkUtils.XN_OPTIONS_URL, params, new TextHttpResponseHandler() {
+        httpClient.get(NetworkUrlUtils.XN_OPTIONS_URL, params, new TextHttpResponseHandler() {
 
             @Override
             public void onStart() {
@@ -131,7 +121,7 @@ public class SelectTimeActivity extends AppCompatActivity {
 //
 //            CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
 //            String[] loginMsg = mSqLiteOperation.find(NetworkThreads.loginInfo.getNumber());
-//            HttpGetHC4 request = new HttpGetHC4(NetworkUtils.XN_OPTIONS_URL + "?number=" + NetworkThreads.loginInfo.getNumber()
+//            HttpGetHC4 request = new HttpGetHC4(NetworkUrlUtils.XN_OPTIONS_URL + "?number=" + NetworkThreads.loginInfo.getNumber()
 //                    + "&xm=" + loginMsg[4] + "&cookie=" + loginMsg[3]);
 //            try {
 //                result = EntityUtilsHC4.toString(closeableHttpClient.execute(request).getEntity(), "gb2312");

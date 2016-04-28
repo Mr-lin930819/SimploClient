@@ -19,7 +19,7 @@ import android.widget.Toast;
 import com.localhost.lin.simploc.Entity.UserEntity;
 import com.localhost.lin.simploc.SQLite.SQLiteOperation;
 import com.localhost.lin.simploc.Utils.JsonUtils;
-import com.localhost.lin.simploc.Utils.NetworkUtils;
+import com.localhost.lin.simploc.Utils.NetworkUrlUtils;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.TextHttpResponseHandler;
@@ -63,9 +63,9 @@ public class SessionVerifyActivity extends AppCompatActivity {
             public void onClick(View v) {
                 final AlertDialog procBox = new AlertDialog.Builder(SessionVerifyActivity.this).setTitle("重新登录").setMessage("正在重新登录...").show();
                 AsyncHttpClient reloginClient = new AsyncHttpClient();
-                reloginClient.get(NetworkUtils.RE_LOGIN, new RequestParams(new HashMap<String, String>() {
+                reloginClient.get(NetworkUrlUtils.RE_LOGIN, new RequestParams(new HashMap<String, String>() {
                     {
-                        put(NetworkUtils.RQ_K_OPENID, userInfo.getOpenAppId());
+                        put(NetworkUrlUtils.RQ_K_OPENID, userInfo.getOpenAppId());
                         put("viewState", mViewState);
                         put("cookie", mCookie);
                         put("checkCode", checkInput.getText().toString());
@@ -108,9 +108,9 @@ public class SessionVerifyActivity extends AppCompatActivity {
         final ProgressDialog verifyDialog = ProgressDialog.show(SessionVerifyActivity.this,
                 "登录验证", "正在验证用户信息");
         AsyncHttpClient client = new AsyncHttpClient();
-        client.get(NetworkUtils.SESSION_VERIFY, new RequestParams(new HashMap<String, String>() {
+        client.get(NetworkUrlUtils.SESSION_VERIFY, new RequestParams(new HashMap<String, String>() {
             {
-                put(NetworkUtils.RQ_K_OPENID, openID);
+                put(NetworkUrlUtils.RQ_K_OPENID, openID);
             }
         }), new TextHttpResponseHandler() {
             @Override
@@ -175,7 +175,7 @@ public class SessionVerifyActivity extends AppCompatActivity {
         @Override
         protected byte[] doInBackground(Void... params) {
             CloseableHttpClient netManager = HttpClients.createDefault();
-            HttpGetHC4 loginGetRequest = new HttpGetHC4(NetworkUtils.LOGIN_URL);
+            HttpGetHC4 loginGetRequest = new HttpGetHC4(NetworkUrlUtils.LOGIN_URL);
 
             String loginPage = "";
             byte[] checkImg = null;
@@ -192,7 +192,7 @@ public class SessionVerifyActivity extends AppCompatActivity {
                 }
 
                 //根据之前的Cookie获取验证码图片
-                HttpGetHC4 checkImgGetRequest = new HttpGetHC4(NetworkUtils.C_IMG_URL + "?cookie=" + tmpData.get("cookie"));
+                HttpGetHC4 checkImgGetRequest = new HttpGetHC4(NetworkUrlUtils.C_IMG_URL + "?cookie=" + tmpData.get("cookie"));
                 checkImg   = EntityUtilsHC4.toByteArray(netManager.execute(checkImgGetRequest).getEntity());
                 Log.d("SessionVerify", "获得验证码图片" + tmpData.get("viewState") + "   " +tmpData.get("cookie"));
             } catch (IOException e) {

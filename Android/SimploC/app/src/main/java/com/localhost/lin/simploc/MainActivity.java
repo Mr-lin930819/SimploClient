@@ -1,6 +1,5 @@
 package com.localhost.lin.simploc;
 
-import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -13,8 +12,6 @@ import android.os.Looper;
 import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
@@ -28,11 +25,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.ViewGroup;
-import android.webkit.JavascriptInterface;
-import android.webkit.JsResult;
-import android.webkit.WebChromeClient;
-import android.webkit.WebView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 
@@ -40,7 +32,6 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Spinner;
-import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -48,10 +39,9 @@ import com.localhost.lin.simploc.Entity.UserEntity;
 import com.localhost.lin.simploc.Fragments.GradeChartTab;
 import com.localhost.lin.simploc.Fragments.GradeListTab;
 import com.localhost.lin.simploc.SQLite.SQLiteOperation;
-import com.localhost.lin.simploc.TestUnit.TestNetwork;
 import com.localhost.lin.simploc.Utils.ImageUtils;
 import com.localhost.lin.simploc.Utils.JsonUtils;
-import com.localhost.lin.simploc.Utils.NetworkUtils;
+import com.localhost.lin.simploc.Utils.NetworkUrlUtils;
 import com.localhost.lin.simploc.customview.MaskImage;
 import com.localhost.lin.simploc.customview.NoneScrollGridView;
 import com.loopj.android.http.AsyncHttpClient;
@@ -65,7 +55,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtilsHC4;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -196,7 +185,7 @@ public class MainActivity extends AppCompatActivity
      */
     private void loadMajorName(){
         AsyncHttpClient client = new AsyncHttpClient();
-        client.get(NetworkUtils.XN_OPTIONS_URL, new RequestParams(new HashMap<String, String>() {
+        client.get(NetworkUrlUtils.XN_OPTIONS_URL, new RequestParams(new HashMap<String, String>() {
             {
 //                put("number", userInfo.getNumber());
 //                put("xm", userInfo.getName());
@@ -302,14 +291,14 @@ public class MainActivity extends AppCompatActivity
 //            new Thread(threads.new QueryGradeThread("2014-2015", "",sqLiteOperation)).start();
         } else if (id == R.id.nav_grade) {
             Intent intent = new Intent();
-            //intent.setClass(MainActivity.this, SelectTimeActivity.class);
-            //startActivityForResult(intent, CUSTOM_QUERY_REQUEST_CODE);
-            Log.e("SS", "NI");
-            intent.setClass(MainActivity.this, CreditStatActivity.class);
-            startActivity(intent);
-
+            intent.setClass(MainActivity.this, SelectTimeActivity.class);
+            startActivityForResult(intent, CUSTOM_QUERY_REQUEST_CODE);
         } else if (id == R.id.query_lesson) {
             loadOption(QUERY_CTRL.QUERY_LESSON);       //弹出时间选择对话框,启动课程表查询
+        } else if (id == R.id.nav_gpa_info) {
+            Intent intent = new Intent();
+            intent.setClass(MainActivity.this, CreditStatActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_share) {
             //resultWebview.loadUrl("file:///android_asset/wait_page.html");
             startActivityForResult(new Intent().setClass(MainActivity.this, SettingActivity.class), SETTING_REQUEST_CODE);
@@ -320,12 +309,6 @@ public class MainActivity extends AppCompatActivity
                     .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-//                            Intent intent = new Intent();
-//                            intent.setClass(MainActivity.this,LoginActivity.class);
-                            //设置数据库中登录状态为登出
-//                            sqLiteOperation.updateLoginStatus(NetworkThreads.loginInfo.getNumber(),"0");
-//                            startActivity(intent);
-//                            finish();
                             logout();
                         }
                     }).setNegativeButton("取消", new DialogInterface.OnClickListener() {
@@ -364,9 +347,9 @@ public class MainActivity extends AppCompatActivity
         }
 
         if(func.equals(QUERY_CTRL.QUERY_LESSON)){
-            optUrl = NetworkUtils.TB_XN_OP_URL;
+            optUrl = NetworkUrlUtils.TB_XN_OP_URL;
         }else{
-            optUrl = NetworkUtils.XN_OPTIONS_URL;
+            optUrl = NetworkUrlUtils.XN_OPTIONS_URL;
         }
 
         AsyncHttpClient httpClient = new AsyncHttpClient();
@@ -375,7 +358,7 @@ public class MainActivity extends AppCompatActivity
 //                put("number",userInfo.getNumber());
 //                put("xm",userInfo.getName());
 //                put("cookie",userInfo.getCookie());
-                put(NetworkUtils.RQ_K_OPENID, userInfo.getOpenAppId());
+                put(NetworkUrlUtils.RQ_K_OPENID, userInfo.getOpenAppId());
             }
         });
 
@@ -415,7 +398,7 @@ public class MainActivity extends AppCompatActivity
                                 add("第三学期");
                             }
                         });
-                ArrayAdapter weekAdapter = null;
+                ArrayAdapter weekAdapter;
 
                 xnAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 xnSpinner.setAdapter(xnAdapter);
@@ -427,7 +410,7 @@ public class MainActivity extends AppCompatActivity
 
                 //如果是课程表查询，则需要加载周数选择
                 if(func.equals(QUERY_CTRL.QUERY_LESSON)){
-                    ArrayList<String> weekData = new ArrayList<String>();
+                    ArrayList<String> weekData = new ArrayList<>();
                     for(int j =0;j<18;j++){
                         weekData.add("第" + String.valueOf(j + 1) + "周");
                     }
@@ -475,7 +458,7 @@ public class MainActivity extends AppCompatActivity
 
 //        //测试
 //        if(false) {
-//            TestNetwork testNetwork = new TestNetwork(NetworkUtils.TEST_LESSON_URL,"?number=" + userInfo.getNumber() + "&name=" + userInfo.getName() + "&cookie=" +
+//            TestNetwork testNetwork = new TestNetwork(NetworkUrlUtils.TEST_LESSON_URL,"?number=" + userInfo.getNumber() + "&name=" + userInfo.getName() + "&cookie=" +
 //                    userInfo.getCookie() + "&xn=" + xn + "&xq=" + xq);
 //            new Thread(testNetwork).start();
 //            dialog.dismiss();
@@ -488,13 +471,13 @@ public class MainActivity extends AppCompatActivity
 //                put("number",userInfo.getNumber());
 //                put("name",userInfo.getName());
 //                put("cookie",userInfo.getCookie());
-                put(NetworkUtils.RQ_K_OPENID, userInfo.getOpenAppId());
+                put(NetworkUrlUtils.RQ_K_OPENID, userInfo.getOpenAppId());
                 put("xn",xn);
                 put("xq",xq);
                 put("week",week);
             }
         });
-        networkManager.get(NetworkUtils.LESSON_URL, params, new TextHttpResponseHandler() {
+        networkManager.get(NetworkUrlUtils.LESSON_URL, params, new TextHttpResponseHandler() {
             @Override
             public void onStart() {
                 super.onStart();
@@ -503,7 +486,6 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onFailure(int i, Header[] headers, String s, Throwable throwable) {
-                Log.d("Fail~~", NetworkUtils.LESSON_URL);
                 Toast.makeText(MainActivity.this, "成绩查询失败", Toast.LENGTH_LONG).show();
             }
 
@@ -534,12 +516,12 @@ public class MainActivity extends AppCompatActivity
 //                put("number",userInfo.getNumber());
 //                put("name",userInfo.getName());
 //                put("cookie",userInfo.getCookie());
-                put(NetworkUtils.RQ_K_OPENID, userInfo.getOpenAppId());
+                put(NetworkUrlUtils.RQ_K_OPENID, userInfo.getOpenAppId());
                 put("xn",xn);
                 put("xq",xq);
             }
         });
-        networkManager.get(NetworkUtils.EXAM_URL, params, new TextHttpResponseHandler() {
+        networkManager.get(NetworkUrlUtils.EXAM_URL, params, new TextHttpResponseHandler() {
             @Override
             public void onStart() {
                 super.onStart();
@@ -548,7 +530,7 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onFailure(int i, Header[] headers, String s, Throwable throwable) {
-                Log.d("Fail~~", NetworkUtils.EXAM_URL);
+                Log.e("Fail~~", NetworkUrlUtils.EXAM_URL);
                 dialog.dismiss();
                 Toast.makeText(MainActivity.this,"请求数据出错，重新登陆或稍后重试.,",Toast.LENGTH_LONG).show();
             }
@@ -572,10 +554,10 @@ public class MainActivity extends AppCompatActivity
 //                put("number",userInfo.getNumber());
 //                put("name",userInfo.getName());
 //                put("cookie",userInfo.getCookie());
-                put(NetworkUtils.RQ_K_OPENID, userInfo.getOpenAppId());
+                put(NetworkUrlUtils.RQ_K_OPENID, userInfo.getOpenAppId());
             }
         });
-        networkManager.get(NetworkUtils.CET_URL, params, new TextHttpResponseHandler() {
+        networkManager.get(NetworkUrlUtils.CET_URL, params, new TextHttpResponseHandler() {
             @Override
             public void onStart() {
                 super.onStart();
@@ -584,7 +566,7 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onFailure(int i, Header[] headers, String s, Throwable throwable) {
-                Log.d("Fail~~", NetworkUtils.EXAM_URL);
+                Log.d("Fail~~", NetworkUrlUtils.EXAM_URL);
                 dialog.dismiss();
                 Toast.makeText(MainActivity.this,"请求数据出错，重新登陆或稍后重试.,",Toast.LENGTH_LONG).show();
             }
@@ -618,11 +600,11 @@ public class MainActivity extends AppCompatActivity
 //                put("number",userInfo.getNumber());
 //                put("name",userInfo.getName());
 //                put("cookie",userInfo.getCookie());
-                put(NetworkUtils.RQ_K_OPENID, userInfo.getOpenAppId());
+                put(NetworkUrlUtils.RQ_K_OPENID, userInfo.getOpenAppId());
             }
         });
         final ProgressDialog dialog = ProgressDialog.show(MainActivity.this,"一键评价","一键评价进行中...");
-        networkManager.get(NetworkUtils.ONE_KEY_COMMENT, params, new TextHttpResponseHandler() {
+        networkManager.get(NetworkUrlUtils.ONE_KEY_COMMENT, params, new TextHttpResponseHandler() {
             @Override
             public void onFailure(int i, Header[] headers, String s, Throwable throwable) {
 
@@ -912,10 +894,10 @@ public class MainActivity extends AppCompatActivity
         AsyncHttpClient httpClient = new AsyncHttpClient();
         RequestParams params = new RequestParams(){
             {
-                put(NetworkUtils.RQ_K_OPENID, userInfo.getOpenAppId());
+                put(NetworkUrlUtils.RQ_K_OPENID, userInfo.getOpenAppId());
             }
         };
-        httpClient.get(NetworkUtils.LOGOUT, params, new TextHttpResponseHandler() {
+        httpClient.get(NetworkUrlUtils.LOGOUT, params, new TextHttpResponseHandler() {
             @Override
             public void onFailure(int i, Header[] headers, String s, Throwable throwable) {
 
@@ -946,7 +928,7 @@ public class MainActivity extends AppCompatActivity
         protected Bitmap doInBackground(Void... params) {
             CloseableHttpClient netManager = HttpClients.createDefault();
             Bitmap retImage = null;
-//            HttpGetHC4 gradeQueryGetRequest = new HttpGetHC4(NetworkUtils.AVATOR_URL + "?number=" + mNumber +
+//            HttpGetHC4 gradeQueryGetRequest = new HttpGetHC4(NetworkUrlUtils.AVATOR_URL + "?number=" + mNumber +
 //                    "&cookie=" + mCookie);
             /*
              *   2015-10-16 从服务端获取头像改为直接从网站获取头像

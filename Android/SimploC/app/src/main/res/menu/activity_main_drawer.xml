@@ -10,6 +10,8 @@
             android:title="查询成绩" />
         <item android:id="@+id/query_lesson" android:icon="@android:drawable/ic_menu_agenda"
             android:title="查询课表"/>
+        <item android:id="@+id/nav_gpa_info" android:icon="@android:drawable/ic_menu_day"
+              android:title="查询学分/绩点" />
     </group>
 
     <item android:title="系统功能">
