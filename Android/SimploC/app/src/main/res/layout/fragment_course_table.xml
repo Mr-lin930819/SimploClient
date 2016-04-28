@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:id="@+id/table_view">
+
+        <com.localhost.lin.simploc.customview.NoneScrollGridView
+            android:layout_width="match_parent" android:background="@color/colorTransparent"
+            android:layout_height="wrap_content" android:numColumns="7"
+            android:id="@+id/table_column" android:paddingLeft="@dimen/table_row_width" android:horizontalSpacing="1dp"
+        ></com.localhost.lin.simploc.customview.NoneScrollGridView>
+
+        <ScrollView
+            android:layout_width="fill_parent"
+            android:layout_height="match_parent">
+            <RelativeLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content">
+                <LinearLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content">
+                    <com.localhost.lin.simploc.customview.NoneScrollGridView
+                        android:layout_width="@dimen/table_row_width"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/table_row" android:background="@color/colorTransparent"
+                        android:numColumns="1" android:verticalSpacing="1dp"
+                        android:columnWidth="@dimen/table_row_width" android:stretchMode="columnWidth"
+                        ></com.localhost.lin.simploc.customview.NoneScrollGridView>
+                    <com.localhost.lin.simploc.customview.NoneScrollGridView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/lesson_table"
+                        android:numColumns="7" android:verticalSpacing="1dp" android:horizontalSpacing="1dp" >
+                        <!--android:columnWidth="45dp" android:stretchMode="columnWidth"-->
+                    </com.localhost.lin.simploc.customview.NoneScrollGridView>
+                </LinearLayout>
+            </RelativeLayout>
+        </ScrollView>
+
+    </LinearLayout>
+
+
+</RelativeLayout>

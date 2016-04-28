@@ -12,7 +12,9 @@ import android.os.Looper;
 import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
@@ -36,6 +38,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.localhost.lin.simploc.Entity.UserEntity;
+import com.localhost.lin.simploc.Fragments.CourseTableFragment;
 import com.localhost.lin.simploc.Fragments.GradeChartTab;
 import com.localhost.lin.simploc.Fragments.GradeListTab;
 import com.localhost.lin.simploc.SQLite.SQLiteOperation;
@@ -78,7 +81,6 @@ public class MainActivity extends AppCompatActivity
     ListView gradeList,examList;
     SQLiteOperation sqLiteOperation;
     UserEntity userInfo = null;
-    NoneScrollGridView courseTable,courseTableColumn,courseTableRow;
     LinearLayout tableView,mainInfoLayout,cetInfoLayout;
     //TabHost tabHost;
     LinearLayout tabHost;
@@ -89,6 +91,8 @@ public class MainActivity extends AppCompatActivity
     private FragmentStatePagerAdapter mPageAdapter;
     private List<android.support.v4.app.Fragment> mFragments = new ArrayList<android.support.v4.app.Fragment>();
     private TabPageIndicator tabPageIndicator;
+
+    private Fragment mCourseTableFragment = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -623,153 +627,15 @@ public class MainActivity extends AppCompatActivity
      * @param jsonContent 传入的Json数据
      */
     private void showCourseTable(String jsonContent,int week){
-        String nowWeek = new SimpleDateFormat("EEEE",Locale.CHINA).format(new java.util.Date());
-
-        courseTable = (NoneScrollGridView)findViewById(R.id.lesson_table);
-        courseTableColumn = (NoneScrollGridView)findViewById(R.id.table_column);
-        courseTableRow = (NoneScrollGridView)findViewById(R.id.table_row);
-        final ArrayList<String[]> textData = new ArrayList<String[]>();
-
-        int weekIndex = 0;
-        String[] weekString = new String[]{"星期一","星期二","星期三","星期四","星期五","星期六","星期日"};
-        for(int i=0; i<7; i++){
-            if(nowWeek.equals(weekString[i]))
-                weekIndex = i;
-        }
-
         getSupportActionBar().setTitle("课程表");
         getSupportActionBar().setSubtitle(new SimpleDateFormat("yyyy年MM月dd日", Locale.CHINA).format(new java.util.Date()));
-        //设置列表头
-        ArrayList<Map<String,Object>> colmunData = new ArrayList<Map<String, Object>>();
-        for(int i = 0 ;i < 7;i++){
-            Map<String,Object> map  = new HashMap<String,Object>();
-            map.put("item", weekString[i]);
-            if( i == weekIndex )
-                map.put("icon",R.drawable.course_header_backicon);
-            else
-                map.put("icon",R.color.colorTransparent);
-            colmunData.add(map);
-        }
-        SimpleAdapter columnAdapter = new SimpleAdapter(MainActivity.this, colmunData, R.layout.course_table_column_item,
-                new String[]{"item","icon"}, new int[]{R.id.column_item,R.id.column_item_icon});
-        courseTableColumn.setAdapter(columnAdapter);
-
-        //设置行表头
-        ArrayList<Map<String,String>> rowData = new ArrayList<Map<String, String>>();
-        for(int i = 0 ;i < 6;i++) {
-            Map<String, String> map = new HashMap<String, String>();
-            map.put("item1", String.valueOf(i*2 + 1));
-            map.put("item2", String.valueOf(i*2 + 2));
-            rowData.add(map);
-        }
-        SimpleAdapter rowAdapter = new SimpleAdapter(MainActivity.this, rowData, R.layout.course_table_row_item,
-                new String[]{"item1","item2"}, new int[]{R.id.row_item_top,R.id.row_item_bottom});
-        courseTableRow.setAdapter(rowAdapter);
-
-        //设置表数据
-        ArrayList<Map<String,Object>> tableData = new ArrayList<Map<String, Object>>();
-//        for(Map.Entry<String,String> item:JsonUtils.convJson2Map(jsonContent,"GRADE").entrySet()){
-//            Map<String,Object> map  = new HashMap<String,Object>();
-//            map.put("item",item.getKey());        //在表格中添加一个Item，设置Item的文字
-//            map.put("back",R.color.colorPrimary);     //设置Item的背景
-//            tableData.add(map);
-//        }
-        ArrayList<String> rawData = new ArrayList<String>();
-        String[] lessonNumber = new String[]{"第1节","第3节","第5节","第7节","第9节","第11节"};
-        int maxlesson = JsonUtils.numOfNode(jsonContent);
-        for(int i =0;i<maxlesson;i++){
-//            Log.d("Converting...",lessonNumber[i]);
-            rawData.addAll(JsonUtils.convJson2List(jsonContent, lessonNumber[i]));   //从json数据中获取节数相关的一周所有课程
-        }
-
-        System.out.print(rawData.toString());
-        for (String s:rawData){
-            Map<String,Object> map = new HashMap<String,Object>();
-            //如果这个时间没课
-            if(s.equals("")){
-                map.put("item","");
-                map.put("back",R.color.colorTransparent);
-                textData.add(new String[]{});
-            }else {     //有课则进行解析，格式为【 周数1;课程名1;教师1;教室1$周数2;课程名2;教师2;教室2$... ... 】,周数格式为"单/双周"或"n-m周".
-                String[] ss,detailText = new String[]{};
-                //TODO 标记，此处split使用$符号做划分，但是$又为正则表达式元符号，所以需要转义
-                ss = s.split("\\$");
-                for(int i = 0; i < ss.length; i++) {
-                    Log.d("Raw..",ss[i]);
-                }
-                StringBuffer showText = new StringBuffer();
-                Pattern pattern = Pattern.compile("([0-9]{1,2})-([0-9]{1,2})周");
-                for(String item:ss){
-                    String []conts = item.split(";");
-//                    Log.d("Content",conts[0]+"," +conts[1]+","+conts[2]+","+conts[3]);
-                    Matcher matcher = pattern.matcher(conts[0]);
-                    if(matcher.find()){
-                        int min, max;
-                        min = Integer.parseInt(matcher.group(1));
-                        max = Integer.parseInt(matcher.group(2));
-                        //如果选择的周数在课程周数范围内（非单双周课程)
-                        if(min <= week && week <=max){
-                            showText.append(conts[1] + "\n");
-                            showText.append(conts[2] + "\n");
-                            if(conts.length < 4)
-                                showText.append("\n");
-                            else
-                                showText.append(conts[3] + "\n");
-                            detailText = conts;
-                            break;
-                        } else {
-                            continue;
-                        }
-                    } else {
-                        //单双周的情况
-                        matcher = Pattern.compile("(.)周").matcher(conts[0]);
-                        if(matcher.find()) {
-                            if( (matcher.group(1).equals("单") && week % 2 == 1) ||
-                                    (matcher.group(1).equals("双") && week % 2 == 0)) {
-                                showText.append(conts[1] + "\n");
-                                showText.append(conts[2] + "\n");
-                                showText.append(conts[3] + "\n");
-                                detailText = conts;
-                                break;
-                            }
-                        }
-                    }
-                }
-                if(!showText.toString().equals("")) {
-                    //在表格中添加一个Item，设置Item的文字
-                    Log.d("Adding...","");
-                    //map.put("back", R.color.colorPrimary);    //设置Item的背景
-                    map.put("item", showText);
-                    textData.add(detailText);
-                    map.put("back", R.color.colorTableCell);
-                }else{
-                    map.put("item","");
-                    map.put("back",R.color.colorTransparent);
-                    textData.add(new String[]{});
-                }
-            }
-            tableData.add(map);
-        }
-        SimpleAdapter tableAdapter = new SimpleAdapter(MainActivity.this,tableData,R.layout.course_table_item,
-                new String[]{"item","back"},new int[]{R.id.course_name,R.id.course_icon});
-        courseTable.setAdapter(tableAdapter);
-        courseTable.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String[] showData = textData.get(position);
-                if(showData.length == 0)
-                    return;
-                View v = (View)getLayoutInflater().inflate(R.layout.course_table_detail,null);
-                ((TextView)v.findViewById(R.id.course_table_detail_name)).setText("课程：\t" + showData[1]);
-                ((TextView)v.findViewById(R.id.course_table_detail_teacher)).setText("教师：\t" + showData[2]);
-                if(showData.length >= 4)
-                    ((TextView)v.findViewById(R.id.course_table_detail_addr)).setText("教室：\t" + showData[3]);
-                new AlertDialog.Builder(MainActivity.this).setTitle("课程详情").setView(v).show();
-            }
-        });
-
-        setViewVisable(VIEWS.LESSON_TABLE);
-        //courseTable.setVisibility(View.VISIBLE);
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        if (mCourseTableFragment != null)
+            transaction.remove(mCourseTableFragment);
+        mCourseTableFragment = CourseTableFragment.
+                newInstance(jsonContent, String.valueOf(week));
+        transaction.add(R.id.main_page, mCourseTableFragment);
+        transaction.commit();
     }
 
     /**
@@ -862,6 +728,9 @@ public class MainActivity extends AppCompatActivity
         CET_LIST
     }
     private void setViewVisable(VIEWS view){
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.remove(mCourseTableFragment);
+        transaction.commit();
         switch (view){
             case LESSON_TABLE:
                 tabHost.setVisibility(View.GONE);
