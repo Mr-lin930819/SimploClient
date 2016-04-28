@@ -379,7 +379,8 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-
+        final ProgressDialog dialog = ProgressDialog.show(MainActivity.this, "获取选项",
+                "正在获取选项信息，请稍后...", true, true);
         httpClient.get(optUrl, params, new TextHttpResponseHandler() {
 
             @Override
@@ -390,12 +391,14 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onFailure(int i, cz.msebera.android.httpclient.Header[] headers, String s, Throwable throwable) {
+                dialog.dismiss();
                 Toast.makeText(MainActivity.this, "网络请求出错", Toast.LENGTH_LONG).show();
             }
 
             @Override
             public void onSuccess(int i, cz.msebera.android.httpclient.Header[] headers, String s) {
 
+                dialog.dismiss();
                 ArrayList<String> retData = JsonUtils.convJson2List(s, "CXTJ");
                 if(retData == null) {
                     Toast.makeText(MainActivity.this, "获取学年失败(服务器错误或网络错误", Toast.LENGTH_LONG).show();
