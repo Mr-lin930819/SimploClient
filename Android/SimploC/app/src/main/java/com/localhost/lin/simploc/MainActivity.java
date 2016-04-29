@@ -38,8 +38,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.localhost.lin.simploc.Entity.UserEntity;
+import com.localhost.lin.simploc.Fragments.CETFragment;
 import com.localhost.lin.simploc.Fragments.CourseTableFragment;
+import com.localhost.lin.simploc.Fragments.ExamTimeTableFragment;
 import com.localhost.lin.simploc.Fragments.GradeChartTab;
+import com.localhost.lin.simploc.Fragments.GradeFragment;
 import com.localhost.lin.simploc.Fragments.GradeListTab;
 import com.localhost.lin.simploc.SQLite.SQLiteOperation;
 import com.localhost.lin.simploc.Utils.ImageUtils;
@@ -78,21 +81,11 @@ public class MainActivity extends AppCompatActivity
     //WebView resultWebview;
     MaskImage toxiang;
     TextView nameText;
-    ListView gradeList,examList;
     SQLiteOperation sqLiteOperation;
     UserEntity userInfo = null;
-    LinearLayout tableView,mainInfoLayout,cetInfoLayout;
     //TabHost tabHost;
     LinearLayout tabHost;
     private ProgressDialog progressDialog;
-
-    //采用Fragment替代TabHost
-    private ViewPager mViewPager;
-    private FragmentStatePagerAdapter mPageAdapter;
-    private List<android.support.v4.app.Fragment> mFragments = new ArrayList<android.support.v4.app.Fragment>();
-    private TabPageIndicator tabPageIndicator;
-
-    private Fragment mCourseTableFragment = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,20 +118,6 @@ public class MainActivity extends AppCompatActivity
 
         threads = new NetworkThreads(handler);
 
-        //tabHost = (TabHost)findViewById(R.id.tabHost);
-        tabHost = (LinearLayout)findViewById(R.id.tab_host);
-        mViewPager = (ViewPager)findViewById(R.id.grade_pager);
-        tabPageIndicator = (TabPageIndicator)findViewById(R.id.tab_indicator);
-
-        //resultWebview = (WebView) findViewById(R.id.result_web_view);
-
-        //gradeList = (ListView)findViewById(R.id.grade_listview);
-        tableView = (LinearLayout)findViewById(R.id.table_view);
-        mainInfoLayout = (LinearLayout)findViewById(R.id.main_info_layout);
-        cetInfoLayout = (LinearLayout)findViewById(R.id.cet_info_layout);
-
-        initContentView();
-
         /**
          * 生成左边抽屉框的展示数据
          * 包括学号、姓名、专业以及头像照片
@@ -161,27 +140,6 @@ public class MainActivity extends AppCompatActivity
             showCourseTable(cstbData, 10);
         }
 
-    }
-
-    void initContentView(){
-        mPageAdapter = new FragmentStatePagerAdapter(getSupportFragmentManager()) {
-            final private String[] titleText = new String[]{"柱状图显示","列表显示"};
-            @Override
-            public android.support.v4.app.Fragment getItem(int position) {
-                return mFragments.get(position);
-            }
-
-            @Override
-            public int getCount() {
-                return mFragments.size();
-            }
-
-            @Override
-            public CharSequence getPageTitle(int position) {
-                return titleText[position % 2];
-            }
-
-        };
     }
 
     /**
@@ -356,7 +314,7 @@ public class MainActivity extends AppCompatActivity
             optUrl = NetworkUrlUtils.XN_OPTIONS_URL;
         }
 
-        AsyncHttpClient httpClient = new AsyncHttpClient();
+        final AsyncHttpClient httpClient = new AsyncHttpClient();
         RequestParams params = new RequestParams(new HashMap<String,String>(){
             {
 //                put("number",userInfo.getNumber());
@@ -367,7 +325,12 @@ public class MainActivity extends AppCompatActivity
         });
 
         final ProgressDialog dialog = ProgressDialog.show(MainActivity.this, "获取选项",
-                "正在获取选项信息，请稍后...", true, true);
+                "正在获取选项信息，请稍后...", true, true, new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialogInterface) {
+                        httpClient.cancelAllRequests(true);
+                    }
+                });
         httpClient.get(optUrl, params, new TextHttpResponseHandler() {
 
             @Override
@@ -490,6 +453,7 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onFailure(int i, Header[] headers, String s, Throwable throwable) {
+                dialog.dismiss();
                 Toast.makeText(MainActivity.this, "成绩查询失败", Toast.LENGTH_LONG).show();
             }
 
@@ -597,6 +561,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
     }
+
     private void processOneKeyComment(String s, final QUERY_CTRL func,final int week){
         AsyncHttpClient networkManager = new AsyncHttpClient();
         RequestParams params = new RequestParams(new HashMap<String,String>(){
@@ -629,13 +594,9 @@ public class MainActivity extends AppCompatActivity
     private void showCourseTable(String jsonContent,int week){
         getSupportActionBar().setTitle("课程表");
         getSupportActionBar().setSubtitle(new SimpleDateFormat("yyyy年MM月dd日", Locale.CHINA).format(new java.util.Date()));
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        if (mCourseTableFragment != null)
-            transaction.remove(mCourseTableFragment);
-        mCourseTableFragment = CourseTableFragment.
+        Fragment courseTableView = CourseTableFragment.
                 newInstance(jsonContent, String.valueOf(week));
-        transaction.add(R.id.main_page, mCourseTableFragment);
-        transaction.commit();
+        switchToView(courseTableView);
     }
 
     /**
@@ -647,116 +608,23 @@ public class MainActivity extends AppCompatActivity
             Toast.makeText(MainActivity.this, "从服务器收到的数据有误", Toast.LENGTH_SHORT).show();
             return;
         }
-        examList = (ListView)findViewById(R.id.main_info_list);
-        ArrayList<ArrayList<String>> rawData;
-        try {
-            rawData = JsonUtils.convJson2StringLists(jsonContent);
-        } catch (NullPointerException e) {
-            Toast.makeText(MainActivity.this, "接收数据有误", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        final ArrayList<Map<String,String>> listData = new ArrayList<Map<String, String>>();//List表格数据
         getSupportActionBar().setTitle("考试时间表");
         getSupportActionBar().setSubtitle(new SimpleDateFormat("yyyy年MM月dd日",Locale.CHINA).format(new java.util.Date()));
-        for(ArrayList<String> itemData:rawData){
-            Map<String,String> map = new HashMap<>();
-            for (String s: itemData){
-                map.put("item" + String.valueOf(itemData.indexOf(s) + 1), s);
-            }
-            listData.add(map);
-        }
-        SimpleAdapter examAdapter = new SimpleAdapter(MainActivity.this,listData,R.layout.exam_list_item,
-                new String[]{"item1","item2"},
-                new int[]{R.id.exam_name,R.id.exam_time});
-        examList.setAdapter(examAdapter);
-        examList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Map<String,String> map = listData.get(position);
-                View v = getLayoutInflater().inflate(R.layout.exam_list_detail_item,null);
-                ((TextView)v.findViewById(R.id.exam_list_detail_name)).setText("考试名称：" + map.get("item1"));
-                ((TextView)v.findViewById(R.id.exam_list_detail_time)).setText("考试时间：" + map.get("item2"));
-                ((TextView)v.findViewById(R.id.exam_list_detail_addr)).setText("考试教室：" + map.get("item3"));
-                ((TextView)v.findViewById(R.id.exam_list_detail_site)).setText("考试座位：" + map.get("item4"));
-                ((TextView)v.findViewById(R.id.exam_list_detail_zone)).setText("考试校区：" + map.get("item5"));
-                new AlertDialog.Builder(MainActivity.this).setTitle("考试信息详情").setView(v).show();
-            }
-        });
-        setViewVisable(VIEWS.MAIN_INFO);
+        Fragment timeTableView = ExamTimeTableFragment.newInstance(jsonContent);
+        switchToView(timeTableView);
     }
 
     private void showCETTable(String jsonContent){
-        ListView cetList = (ListView)findViewById(R.id.cet_info_list);
-        ArrayList<ArrayList<String>> rawData = JsonUtils.convJson2StringLists(jsonContent);
-        final ArrayList<Map<String,String>> listData = new ArrayList<Map<String, String>>();//List表格数据
         getSupportActionBar().setTitle("等级考试成绩单");
         getSupportActionBar().setSubtitle("");
-
-        for(ArrayList<String> itemData:rawData){
-            Map<String,String> map = new HashMap<>();
-            for (String s: itemData){
-                map.put("item" + String.valueOf(itemData.indexOf(s) + 1), s);
-            }
-            listData.add(map);
-        }
-        SimpleAdapter cetAdapter = new SimpleAdapter(MainActivity.this,listData,R.layout.cet_list_item,
-                new String[]{"item2","item3","item4","item7"},
-                new int[]{R.id.xn_cet,R.id.xq_cet,R.id.name_cet,R.id.grade_cet});
-        cetList.setAdapter(cetAdapter);
-        cetList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                View v = getLayoutInflater().inflate(R.layout.cet_list_detail_item,null);
-                Map map = listData.get(position);
-                ((TextView)v.findViewById(R.id.cet_list_detail_xn)).setText("学年：\t\t\t\t"+map.get("item2"));
-                ((TextView)v.findViewById(R.id.cet_list_detail_xq)).setText("学期：\t\t\t\t"+map.get("item3"));
-                ((TextView)v.findViewById(R.id.cet_list_detail_date)).setText("考试时间：\t\t"+map.get("item6"));
-                ((TextView)v.findViewById(R.id.cet_list_detail_name)).setText("考试名称：\t\t"+map.get("item4"));
-                ((TextView)v.findViewById(R.id.cet_list_detail_number)).setText("准考证号：\t\t"+map.get("item5"));
-                ((TextView)v.findViewById(R.id.cet_list_detail_grade)).setText("成绩：\t\t\t\t"+map.get("item7"));
-                new AlertDialog.Builder(MainActivity.this).setTitle("等级考试详情").setView(v).show();
-            }
-        });
-        setViewVisable(VIEWS.CET_LIST);
+        Fragment cetFragment = CETFragment.newInstance(jsonContent);
+        switchToView(cetFragment);
     }
 
-    private enum VIEWS{
-        LESSON_TABLE,
-        GRADE_TAB,
-        MAIN_INFO,
-        CET_LIST
-    }
-    private void setViewVisable(VIEWS view){
+    private void switchToView(Fragment view) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.remove(mCourseTableFragment);
+        transaction.replace(R.id.main_page, view);
         transaction.commit();
-        switch (view){
-            case LESSON_TABLE:
-                tabHost.setVisibility(View.GONE);
-                mainInfoLayout.setVisibility(View.GONE);
-                cetInfoLayout.setVisibility(View.GONE);
-                tableView.setVisibility(View.VISIBLE);
-                break;
-            case GRADE_TAB:
-                tableView.setVisibility(View.GONE);
-                mainInfoLayout.setVisibility(View.GONE);
-                cetInfoLayout.setVisibility(View.GONE);
-                tabHost.setVisibility(View.VISIBLE);
-                break;
-            case MAIN_INFO:
-                tabHost.setVisibility(View.GONE);
-                tableView.setVisibility(View.GONE);
-                cetInfoLayout.setVisibility(View.GONE);
-                mainInfoLayout.setVisibility(View.VISIBLE);
-                break;
-            case CET_LIST:
-                tabHost.setVisibility(View.GONE);
-                mainInfoLayout.setVisibility(View.GONE);
-                tableView.setVisibility(View.GONE);
-                cetInfoLayout.setVisibility(View.VISIBLE);
-            default:break;
-        }
     }
 
     private void logout(){
@@ -859,7 +727,6 @@ public class MainActivity extends AppCompatActivity
             }
         }else if(requestCode == CUSTOM_QUERY_REQUEST_CODE){//自定义查询成绩
             if(resultCode == RESULT_OK){
-                setViewVisable(VIEWS.GRADE_TAB);
                 getSupportActionBar().setTitle("成绩单");
                 //resultWebview.loadUrl("file:///android_asset/wait_page.html");
                 progressDialog = ProgressDialog.show(MainActivity.this, "成绩单", "查询中... ...");
@@ -888,20 +755,9 @@ public class MainActivity extends AppCompatActivity
                 //WebView resultWebview = (WebView) findViewById(R.id.result_web_view);
 
                 String resultJson = msg.getData().getString("json");
-                Log.d("LLAALLAA", resultJson);
-                GradeChartTab gradeChartTab =GradeChartTab.newInstance(0);
-                GradeListTab gradeListTab = new GradeListTab();
-                Bundle bundle = new Bundle();
-                bundle.putString("jsonResult", resultJson);
-                gradeChartTab.setArguments(bundle);
-                gradeListTab.setArguments(bundle);
-                mFragments.clear();
-                mFragments.add(gradeChartTab);
-                mFragments.add(gradeListTab);
-                mViewPager.setAdapter(mPageAdapter);
-                tabPageIndicator.setVisibility(View.VISIBLE);
-                tabPageIndicator.setViewPager(mViewPager, 0);
+                Fragment gradeView = GradeFragment.newInstance(resultJson);
                 progressDialog.dismiss();
+                switchToView(gradeView);
             }
         }
     };
