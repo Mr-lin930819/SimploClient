@@ -13,9 +13,7 @@ import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
@@ -27,12 +25,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 
 import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.SimpleAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -41,19 +36,15 @@ import com.localhost.lin.simploc.Entity.UserEntity;
 import com.localhost.lin.simploc.Fragments.CETFragment;
 import com.localhost.lin.simploc.Fragments.CourseTableFragment;
 import com.localhost.lin.simploc.Fragments.ExamTimeTableFragment;
-import com.localhost.lin.simploc.Fragments.GradeChartTab;
 import com.localhost.lin.simploc.Fragments.GradeFragment;
-import com.localhost.lin.simploc.Fragments.GradeListTab;
 import com.localhost.lin.simploc.SQLite.SQLiteOperation;
 import com.localhost.lin.simploc.Utils.ImageUtils;
 import com.localhost.lin.simploc.Utils.JsonUtils;
 import com.localhost.lin.simploc.Utils.NetworkUrlUtils;
 import com.localhost.lin.simploc.customview.MaskImage;
-import com.localhost.lin.simploc.customview.NoneScrollGridView;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.TextHttpResponseHandler;
-import com.viewpagerindicator.TabPageIndicator;
 
 import org.apache.http.client.methods.HttpGetHC4;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -64,11 +55,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import cz.msebera.android.httpclient.Header;
 
@@ -728,6 +715,7 @@ public class MainActivity extends AppCompatActivity
         }else if(requestCode == CUSTOM_QUERY_REQUEST_CODE){//自定义查询成绩
             if(resultCode == RESULT_OK){
                 getSupportActionBar().setTitle("成绩单");
+                Log.i("Grade", "学年：" + data.getStringExtra("xn") + "  " + data.getStringExtra("xq") );
                 //resultWebview.loadUrl("file:///android_asset/wait_page.html");
                 progressDialog = ProgressDialog.show(MainActivity.this, "成绩单", "查询中... ...");
                 new Thread(threads.new QueryGradeThread(data.getStringExtra("xn"),data.getStringExtra("xq"),sqLiteOperation)).start();

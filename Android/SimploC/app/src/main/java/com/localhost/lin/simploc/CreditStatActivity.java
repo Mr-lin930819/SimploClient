@@ -10,6 +10,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
@@ -52,6 +53,7 @@ public class CreditStatActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_credit_stat);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         mSqLiteOperation = new SQLiteOperation(this);
         initContentView();
         loadData();
@@ -175,5 +177,15 @@ public class CreditStatActivity extends AppCompatActivity
     @Override
     public void onFragmentInteraction(Uri uri) {
 
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home){
+            finish();
+            return true;
+        }else{
+            return false;
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.localhost.lin.simploc;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -68,6 +69,7 @@ public class SelectTimeActivity extends AppCompatActivity {
 
     private void loadOption(){
         AsyncHttpClient httpClient = new AsyncHttpClient();
+        final ProgressDialog dialog = ProgressDialog.show(this, "获取选项", "获取学年信息中...");
         final String[] lgMsg = mSqLiteOperation.find(NetworkThreads.loginInfo.getNumber());
         RequestParams params = new RequestParams(new HashMap<String,String>(){
             {
@@ -87,7 +89,8 @@ public class SelectTimeActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(int i, cz.msebera.android.httpclient.Header[] headers, String s, Throwable throwable) {
-                Toast.makeText(SelectTimeActivity.this,"网络出错",Toast.LENGTH_LONG);
+                Toast.makeText(SelectTimeActivity.this,"网络出错",Toast.LENGTH_LONG).show();
+                dialog.dismiss();
                 finish();
             }
 
@@ -100,6 +103,7 @@ public class SelectTimeActivity extends AppCompatActivity {
                 xnAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 xnSpinner.setAdapter(xnAdapter);
                 xnSpinner.setSelection(1);
+                dialog.dismiss();
             }
         });
     }

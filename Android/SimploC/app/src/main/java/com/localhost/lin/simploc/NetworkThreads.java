@@ -32,6 +32,7 @@ public class NetworkThreads {
     public static final String C_IMG_URL          = HOST_URL + "/CheckImgServlet";
     public static final String QUERY_URL          = HOST_URL + "/QueryGradeServlet";
 
+
 //    final class LoginInfo{
 //        public String number;
 //        public String password;
