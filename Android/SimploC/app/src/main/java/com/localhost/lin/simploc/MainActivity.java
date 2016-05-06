@@ -205,7 +205,7 @@ public class MainActivity extends AppCompatActivity
                     }).show();
         }else if(id == R.id.action_about) {
             new AlertDialog.Builder(MainActivity.this).setTitle("关于")
-                    .setMessage("SimploC    1.0.4 \n\nAuthor: Lin \n" +
+                    .setMessage("SimploC    1.0.6 \n\nAuthor: Lin \n" +
                             "Technical Support: Tom Zhang \n\n " +
                             //"\n 应用使用的开源框架/库: \n - AsyncHttpClient (异步网络请求库)" +
                             //"\n - ViewPagerIndicator (ViewPager指示器)" +
@@ -214,7 +214,7 @@ public class MainActivity extends AppCompatActivity
                             "\n - Chart.js (基于Html5 Canvas的图表绘制库)" +
                             "\n - LitePay (SQLite数据库ORM)" +
                             "\n - org.json (JSON解析工具)" +
-                            "\n\n 2016.01.27").show();
+                            "\n\n 2016.05.06").show();
         }
 //        }else if (id == R.id.action_exit) {
 //            return true;
