@@ -2,8 +2,10 @@ package com.localhost.lin.simploc;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.localhost.lin.simploc.Entity.LoginInfo;
 import com.localhost.lin.simploc.SQLite.SQLiteOperation;
@@ -54,7 +56,18 @@ public class NetworkThreads {
         this.mHandler = mHandler;
     }
 
+    public interface RecvLoginPageListener{
+        void onNetworkError(String reason);
+    }
+
     public class RecvLoginPageThread implements Runnable{
+
+        private RecvLoginPageListener mListener;
+
+        public RecvLoginPageThread(RecvLoginPageListener listener) {
+            mListener = listener;
+        }
+
         @Override
         public void run() {
             CloseableHttpClient  netManager = HttpClients.createDefault();
@@ -89,7 +102,11 @@ public class NetworkThreads {
                 HttpGetHC4 checkImgGetRequest = new HttpGetHC4(C_IMG_URL + "?cookie=" + tmpData.get("cookie"));
                 checkImg   = EntityUtilsHC4.toByteArray(netManager.execute(checkImgGetRequest).getEntity());
             } catch (IOException e) {
-                e.printStackTrace();
+//                e.printStackTrace();
+                if(mListener != null) {
+                    mListener.onNetworkError("网络连接错误");
+                    return;
+                }
             }finally {
                 try {
                     netManager.close();

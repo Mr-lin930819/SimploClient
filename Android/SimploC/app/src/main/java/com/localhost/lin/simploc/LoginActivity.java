@@ -67,6 +67,7 @@ public class LoginActivity extends AppCompatActivity{
     NetworkThreads threads;
     SQLiteOperation sqLiteOperation;
     private int retryCount = 0;
+    private NetworkThreads.RecvLoginPageListener mLoginRecvListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -117,7 +118,18 @@ public class LoginActivity extends AppCompatActivity{
             }
         });
 
-        Thread loginThread = new Thread(threads.new RecvLoginPageThread());
+        mLoginRecvListener = new NetworkThreads.RecvLoginPageListener() {
+            @Override
+            public void onNetworkError(final String reason) {
+                Message msg = new Message();
+                Bundle data = new Bundle();
+                data.putString("errorInfo", reason);
+                msg.setData(data);
+                msg.obj = "networkError";
+                handler.sendMessage(msg);
+            }
+        };
+        Thread loginThread = new Thread(threads.new RecvLoginPageThread(mLoginRecvListener));
         loginThread.start();
 
         mLoginFormView = findViewById(R.id.login_form);
@@ -134,7 +146,7 @@ public class LoginActivity extends AppCompatActivity{
 
         @Override
         public void onTextChanged(CharSequence s, int start, int before, int count) {
-            String [] info = null;
+            String [] info;
             if (s.length() == 12){
                 info = sqLiteOperation.find(s.toString());
                 if(info != null){
@@ -299,14 +311,17 @@ public class LoginActivity extends AppCompatActivity{
             }else if(((String)msg.obj).equalsIgnoreCase("runError")){
                 String info = msg.getData().getString("info");
                 //登录界面获取错误，重试
-                if(info.equals("LoginPage")){
-                    new Thread(threads.new RecvLoginPageThread()).start();
+                if("LoginPage".equals(info)){
+                    new Thread(threads.new RecvLoginPageThread(mLoginRecvListener)).start();
                     //重试次数大于5，退出程序
                     if( ++retryCount > 5){
-                        Toast.makeText(LoginActivity.this,"网络连接错误",Toast.LENGTH_LONG);
+                        Toast.makeText(LoginActivity.this,"网络连接错误",Toast.LENGTH_LONG).show();
                         LoginActivity.this.finish();
                     }
                 }
+            } else if(((String) msg.obj).equalsIgnoreCase("networkError")) {
+                Toast.makeText(LoginActivity.this, msg.getData().getString("errorInfo"),
+                        Toast.LENGTH_LONG).show();
             }
         }
     };
@@ -330,10 +345,9 @@ public class LoginActivity extends AppCompatActivity{
 
         @Override
         protected Integer doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
 
             String result = null;
-            String canLogin="";
+            String canLogin;
             CloseableHttpClient netManager = HttpClients.createDefault();
             HttpGetHC4 tryLoginGetRequest = new HttpGetHC4(NetworkThreads.TRY_LOGIN_URL + "?number=" + mNumber +
                     "&password=" + mPassword + "&checkCode="
@@ -412,13 +426,13 @@ public class LoginActivity extends AppCompatActivity{
                 finish();
             }else if(success == 2) {    //2: 验证码错误
                 showProgress(false);
-                new Thread(threads.new RecvLoginPageThread()).start();
+                new Thread(threads.new RecvLoginPageThread(mLoginRecvListener)).start();
                 mCheckCodeView.setError(getString(R.string.error_maybe_invalid_checkcode));
                 mCheckCodeView.requestFocus();
             }
             else if(success == 0){                      //0: 密码错误
                 showProgress(false);
-                new Thread(threads.new RecvLoginPageThread()).start();
+                new Thread(threads.new RecvLoginPageThread(mLoginRecvListener)).start();
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
                 mPasswordView.requestFocus();
             }else if(success == 3) {         //连接服务器错误
