@@ -121,12 +121,7 @@ public class LoginActivity extends AppCompatActivity{
         mLoginRecvListener = new NetworkThreads.RecvLoginPageListener() {
             @Override
             public void onNetworkError(final String reason) {
-                Message msg = new Message();
-                Bundle data = new Bundle();
-                data.putString("errorInfo", reason);
-                msg.setData(data);
-                msg.obj = "networkError";
-                handler.sendMessage(msg);
+                notifyNetworkError(reason);
             }
         };
         Thread loginThread = new Thread(threads.new RecvLoginPageThread(mLoginRecvListener));
@@ -360,6 +355,7 @@ public class LoginActivity extends AppCompatActivity{
                 result = EntityUtilsHC4.toString(netManager.execute(tryLoginGetRequest).getEntity(),"gb2312");
             } catch (IOException e) {
                 e.printStackTrace();
+                return 3;
             }
             try {
                 JSONObject rsJson = new JSONObject(result).getJSONObject("TRY");
@@ -448,5 +444,15 @@ public class LoginActivity extends AppCompatActivity{
             showProgress(false);
         }
     }
+
+    private void notifyNetworkError(String reason) {
+        Message msg = new Message();
+        Bundle data = new Bundle();
+        data.putString("errorInfo", reason);
+        msg.setData(data);
+        msg.obj = "networkError";
+        handler.sendMessage(msg);
+    }
+
 }
 
