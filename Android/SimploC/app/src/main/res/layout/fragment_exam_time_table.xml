@@ -1,0 +1,52 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:tools="http://schemas.android.com/tools"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             tools:context="com.localhost.lin.simploc.Fragments.ExamTimeTableFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/main_info_layout"
+        android:orientation="vertical">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/title_height"
+            android:text="考试信息" android:textSize="@dimen/table_title_text_size"
+            android:gravity="center"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <!-- 表头 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="30dp" android:background="@color/colorLoginButton"
+                android:weightSum="12">
+                <TextView
+                    android:layout_width="wrap_content" android:gravity="center"
+                    android:layout_height="match_parent" android:text="课程名称"
+                    android:layout_weight="5"/>
+                <TextView
+                    android:layout_width="wrap_content" android:gravity="center"
+                    android:layout_height="match_parent" android:text="考试时间"
+                    android:layout_weight="7"/>
+                <!--<TextView-->
+                <!--android:layout_width="90dp" android:gravity="center"-->
+                <!--android:layout_height="match_parent" android:text="考试地点" />-->
+                <!--<TextView-->
+                <!--android:layout_width="25dp" android:gravity="center"-->
+                <!--android:layout_height="match_parent" android:text="座位"/>-->
+                <!--<TextView-->
+                <!--android:layout_width="90dp" android:gravity="center"-->
+                <!--android:layout_height="match_parent" android:text="校区"/>-->
+            </LinearLayout>
+            <ListView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/main_info_list"/>
+        </LinearLayout>
+
+    </LinearLayout>
+</FrameLayout>
