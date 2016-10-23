@@ -299,7 +299,7 @@ public class LoginActivity extends AppCompatActivity{
             }else if(((String)msg.obj).equalsIgnoreCase("runError")){
                 String info = msg.getData().getString("info");
                 //登录界面获取错误，重试
-                if(info.equals("LoginPage")){
+                if(info.equals("ThesisApi")){
                     new Thread(threads.new RecvLoginPageThread()).start();
                     //重试次数大于5，退出程序
                     if( ++retryCount > 5){

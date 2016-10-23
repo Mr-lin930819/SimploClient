@@ -75,7 +75,7 @@ public class NetworkThreads {
                 tmpData = JsonUtils.convJson2Map(loginPage, "loginPage");
                 if(tmpData == null){
                     msg.obj = "runError";
-                    loginBundle.putString("info", "LoginPage");
+                    loginBundle.putString("info", "ThesisApi");
                     msg.setData(loginBundle);
                     try {
                         Thread.currentThread().sleep(2500);
