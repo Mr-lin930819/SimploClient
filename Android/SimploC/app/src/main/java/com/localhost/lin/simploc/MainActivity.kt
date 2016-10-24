@@ -2,37 +2,28 @@ package com.localhost.lin.simploc
 
 import android.app.Activity
 import android.app.ProgressDialog
-import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import android.support.design.widget.FloatingActionButton
+import android.support.design.widget.NavigationView
 import android.support.design.widget.Snackbar
 import android.support.v4.app.Fragment
-import android.support.v4.app.FragmentTransaction
-import android.support.v7.app.AlertDialog
-import android.util.Log
-import android.view.View
-import android.support.design.widget.NavigationView
 import android.support.v4.view.GravityCompat
 import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.ActionBarDrawerToggle
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.ArrayAdapter
-
-import android.widget.LinearLayout
-import android.widget.Spinner
-import android.widget.TextView
-import android.widget.Toast
-
+import android.view.View
+import android.widget.*
 import com.localhost.lin.simploc.Entity.UserEntity
 import com.localhost.lin.simploc.Fragments.CETFragment
 import com.localhost.lin.simploc.Fragments.CourseTableFragment
@@ -47,33 +38,26 @@ import com.localhost.lin.simploc.query_interface.ThesisApi
 import com.loopj.android.http.AsyncHttpClient
 import com.loopj.android.http.RequestParams
 import com.loopj.android.http.TextHttpResponseHandler
-
+import kotlinx.android.synthetic.main.nav_header_main.*
 import org.apache.http.client.methods.HttpGetHC4
-import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtilsHC4
-
-import java.io.IOException
-import java.text.SimpleDateFormat
-import java.util.ArrayList
-import java.util.HashMap
-import java.util.Locale
-
-import cz.msebera.android.httpclient.Header
-import kotlinx.android.synthetic.main.nav_header_main.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import rx.Observable
+import rx.android.schedulers.AndroidSchedulers
+import rx.schedulers.Schedulers
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     internal var threads: NetworkThreads? = null
-    //WebView resultWebview;
     internal var toxiang: MaskImage? = null
     internal var nameText: TextView? = null
     internal var sqLiteOperation: SQLiteOperation? = null
     internal var userInfo: UserEntity? = null
-    //TabHost tabHost;
-    internal var tabHost: LinearLayout? = null
     private var progressDialog: ProgressDialog? = null
 
     private val thesisService = CustomApplication.getInstance().retrofit.create(ThesisApi::class.java)
@@ -84,7 +68,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         setContentView(R.layout.activity_main)
         //载入已登录的用户信息，此处学号获取采用静态全局变量的方式，更好的方式是采用意图Intent
         // UserInfo为已登录用户信息，将会存在于整个MainActivity生命周期内，完成各项查询
-        userInfo = sqLiteOperation!!.findUser(NetworkThreads.loginInfo.number)
+        userInfo = sqLiteOperation!!.findUser(NetworkThreads.loginInfo?.number.toString())
         val toolbar = findViewById(R.id.toolbar) as Toolbar?
         setSupportActionBar(toolbar)
 
@@ -115,11 +99,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         //获取专业名称
         loadMajorName()
         //获取头像图片
-        if (sqLiteOperation!!.queryIsShowAvator(userInfo!!.number))
-            AvatarGetTask(userInfo!!.number, userInfo!!.cookie).execute(null as Void)
+        if (sqLiteOperation!!.queryIsShowAvator(userInfo!!.number.toString()))
+            loadAvatar(userInfo!!.cookie.toString())
 
         //默认主界面显示课程表    2016.01.27 Add
-        val cstbData = sqLiteOperation!!.getSavedCsTb(userInfo!!.number)
+        val cstbData = sqLiteOperation!!.getSavedCsTb(userInfo!!.number.toString())
         if (cstbData != "") {
             showCourseTable(cstbData, 10)
         }
@@ -131,7 +115,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
      */
     private fun loadMajorName() {
 
-        val loadService = thesisService.loadMajorName(userInfo!!.openAppId)
+        val loadService = thesisService.loadMajorName(userInfo!!.openAppId.toString())
         loadService.enqueue(object : Callback<String> {
             override fun onFailure(call: Call<String>?, t: Throwable?) {
 
@@ -145,32 +129,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
 
         })
-
-//        val client = AsyncHttpClient()
-//        client.get(NetworkUrlUtils.XN_OPTIONS_URL, RequestParams(object : HashMap<String, String>() {
-//            init {
-//                //                put("number", userInfo.getNumber());
-//                //                put("xm", userInfo.getName());
-//                //                put("cookie", userInfo.getCookie());
-//                put("openUserId", userInfo!!.openAppId)
-//            }
-//        }), object : TextHttpResponseHandler() {
-//            override fun onStart() {
-//                charset = "gb2312"
-//                super.onStart()
-//            }
-//
-//            override fun onFailure(i: Int, headers: Array<Header>, s: String, throwable: Throwable) {
-//
-//            }
-//
-//            override fun onSuccess(i: Int, headers: Array<Header>, s: String) {
-//                var majorText: String? = null
-//                majorText = JsonUtils.getNodeString(s, "ZY")//获取专业信息
-//                //nameText.setText(NetworkThreads.loginInfo.getXm() + "\t\t" + retData);
-//                nameText?.text = userInfo!!.name + "\t\t" + majorText
-//            }
-//        })
     }
 
     override fun onBackPressed() {
@@ -243,10 +201,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             startActivity(intent)
         } else if (id == R.id.nav_share) {
             //resultWebview.loadUrl("file:///android_asset/wait_page.html");
-            startActivityForResult(Intent().setClass(this@MainActivity, SettingActivity::class.java), SETTING_REQUEST_CODE)
+            startActivityForResult(Intent().setClass(
+                    this@MainActivity, SettingActivity::class.java), SETTING_REQUEST_CODE)
             overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.fade_out)
         } else if (id == R.id.nav_send) {
-            val dialog = AlertDialog.Builder(this@MainActivity).setTitle("登出").setMessage("确定登出吗？").setPositiveButton("确定") { dialog, which -> logout() }.setNegativeButton("取消") { dialog, which -> dialog.dismiss() }.show()
+            val dialog = AlertDialog.Builder(this@MainActivity).setTitle("登出")
+                    .setMessage("确定登出吗？")
+                    .setPositiveButton("确定") { dialog, which -> logout() }
+                    .setNegativeButton("取消") { dialog, which -> dialog.dismiss() }.show()
         }
 
         val drawer = findViewById(R.id.drawer_layout) as DrawerLayout?
@@ -288,7 +250,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 //                put("number",userInfo.getNumber());
                 //                put("xm",userInfo.getName());
                 //                put("cookie",userInfo.getCookie());
-                put(NetworkUrlUtils.RQ_K_OPENID, userInfo!!.openAppId)
+                put(NetworkUrlUtils.RQ_K_OPENID, userInfo!!.openAppId.toString())
             }
         })
 
@@ -383,15 +345,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         //            return;
         //        }
 
-        val lessonGet = thesisService.queryLesson(userInfo!!.openAppId, xn, xq, week)
+        val lessonGet = thesisService.queryLesson(userInfo!!.openAppId.toString(), xn, xq, week)
         lessonGet.enqueue(object : Callback<String> {
             override fun onResponse(call: Call<String>?, response: Response<String>?) {
                 Log.d("Success!!", userInfo!!.number)
                 dialog.dismiss()
-                if (sqLiteOperation?.getSavedCsTb(userInfo!!.number) == "") {
-                    sqLiteOperation?.insertCourseTb(userInfo!!.number, response?.body().toString())
+                if (sqLiteOperation?.getSavedCsTb(userInfo!!.number.toString()) == "") {
+                    sqLiteOperation?.insertCourseTb(userInfo!!.number.toString(), response?.body().toString())
                 } else {
-                    sqLiteOperation?.updateCsTb(userInfo!!.number, response?.body().toString())
+                    sqLiteOperation?.updateCsTb(userInfo!!.number.toString(), response?.body().toString())
                 }
                 showCourseTable(response?.body().toString(), Integer.parseInt(week))
             }
@@ -402,41 +364,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
 
         })
-
-//        val networkManager = AsyncHttpClient()
-//        val params = RequestParams(object : HashMap<String, String>() {
-//            init {
-//                //                put("number",userInfo.getNumber());
-//                //                put("name",userInfo.getName());
-//                //                put("cookie",userInfo.getCookie());
-//                put(NetworkUrlUtils.RQ_K_OPENID, userInfo!!.openAppId)
-//                put("xn", xn)
-//                put("xq", xq)
-//                put("week", week)
-//            }
-//        })
-//        networkManager.get(NetworkUrlUtils.LESSON_URL, params, object : TextHttpResponseHandler() {
-//            override fun onStart() {
-//                super.onStart()
-//                charset = "gb2312"
-//            }
-//
-//            override fun onFailure(i: Int, headers: Array<Header>, s: String, throwable: Throwable) {
-//                dialog.dismiss()
-//                Toast.makeText(this@MainActivity, "成绩查询失败", Toast.LENGTH_LONG).show()
-//            }
-//
-//            override fun onSuccess(i: Int, headers: Array<Header>, s: String) {
-//                Log.d("Success!!", userInfo!!.number)
-//                dialog.dismiss()
-//                if (sqLiteOperation?.getSavedCsTb(userInfo!!.number) == "") {
-//                    sqLiteOperation?.insertCourseTb(userInfo!!.number, s)
-//                } else {
-//                    sqLiteOperation?.updateCsTb(userInfo!!.number, s)
-//                }
-//                showCourseTable(s, Integer.parseInt(week))
-//            }
-//        })
     }
 
     /**
@@ -447,33 +374,21 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
      */
     private fun queryExam(xn: String, xq: String) {
         val dialog = ProgressDialog.show(this@MainActivity, "考试信息", "查询中... ...")
-        val networkManager = AsyncHttpClient()
-        val params = RequestParams(object : HashMap<String, String>() {
-            init {
-                //                put("number",userInfo.getNumber());
-                //                put("name",userInfo.getName());
-                //                put("cookie",userInfo.getCookie());
-                put(NetworkUrlUtils.RQ_K_OPENID, userInfo!!.openAppId)
-                put("xn", xn)
-                put("xq", xq)
-            }
-        })
-        networkManager.get(NetworkUrlUtils.EXAM_URL, params, object : TextHttpResponseHandler() {
-            override fun onStart() {
-                super.onStart()
-                charset = "gb2312"
-            }
 
-            override fun onFailure(i: Int, headers: Array<Header>, s: String, throwable: Throwable) {
+        val examInfoGet = thesisService.queryExamInfo(
+                userInfo?.openAppId.toString(), xn, xq)
+        examInfoGet.enqueue(object : Callback<String> {
+            override fun onFailure(call: Call<String>?, t: Throwable?) {
                 Log.e("Fail~~", NetworkUrlUtils.EXAM_URL)
                 dialog.dismiss()
                 Toast.makeText(this@MainActivity, "请求数据出错，重新登陆或稍后重试.,", Toast.LENGTH_LONG).show()
             }
 
-            override fun onSuccess(i: Int, headers: Array<Header>, s: String) {
-                showExamTimeTable(s)
+            override fun onResponse(call: Call<String>?, response: Response<String>?) {
+                showExamTimeTable(response?.body().toString())
                 dialog.dismiss()
             }
+
         })
     }
 
@@ -482,61 +397,47 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
      */
     private fun queryCET() {
         val dialog = ProgressDialog.show(this@MainActivity, "等级考试信息", "查询中... ...")
-        val networkManager = AsyncHttpClient()
-        val params = RequestParams(object : HashMap<String, String>() {
-            init {
-                //                put("number",userInfo.getNumber());
-                //                put("name",userInfo.getName());
-                //                put("cookie",userInfo.getCookie());
-                put(NetworkUrlUtils.RQ_K_OPENID, userInfo!!.openAppId)
-            }
-        })
-        networkManager.get(NetworkUrlUtils.CET_URL, params, object : TextHttpResponseHandler() {
-            override fun onStart() {
-                super.onStart()
-                charset = "gb2312"
-            }
 
-            override fun onFailure(i: Int, headers: Array<Header>, s: String, throwable: Throwable) {
+        val cetGet = thesisService.queryCETInfo(userInfo?.openAppId.toString())
+        cetGet.enqueue(object : Callback<String> {
+            override fun onFailure(call: Call<String>?, t: Throwable?) {
                 Log.d("Fail~~", NetworkUrlUtils.EXAM_URL)
                 dialog.dismiss()
                 Toast.makeText(this@MainActivity, "请求数据出错，重新登陆或稍后重试.,", Toast.LENGTH_LONG).show()
             }
 
-            override fun onSuccess(i: Int, headers: Array<Header>, s: String) {
-                dialog.dismiss()
-                if (s == "CODE2") {//需要进行一键评价
-                    AlertDialog.Builder(this@MainActivity).setTitle("一键评价").setMessage("需要进行一键评价才能继续，确定进行一键评价吗？").setPositiveButton("确定") { dialog, which -> processOneKeyComment(s, QUERY_CTRL.QUERY_CET, 0) }.setNegativeButton("取消", null).show()
+            override fun onResponse(call: Call<String>?, response: Response<String>?) {
+                if (response?.body() == "CODE2") {//需要进行一键评价
+                    AlertDialog.Builder(this@MainActivity).setTitle("一键评价")
+                            .setMessage("需要进行一键评价才能继续，确定进行一键评价吗？")
+                            .setPositiveButton("确定") { dialog, which -> processOneKeyComment() }
+                            .setNegativeButton("取消", null).show()
                     return
-                } else if (s == "CODE1") {
+                } else if (response?.body() == "CODE1") {
                     Toast.makeText(this@MainActivity, "身份信息超时，需重新登陆", Toast.LENGTH_LONG).show()
                     return
                 }
-                showCETTable(s)
+                showCETTable(response?.body().toString())
             }
+
         })
     }
 
-    private fun processOneKeyComment(s: String, func: QUERY_CTRL, week: Int) {
-        val networkManager = AsyncHttpClient()
-        val params = RequestParams(object : HashMap<String, String>() {
-            init {
-                //                put("number",userInfo.getNumber());
-                //                put("name",userInfo.getName());
-                //                put("cookie",userInfo.getCookie());
-                put(NetworkUrlUtils.RQ_K_OPENID, userInfo!!.openAppId)
-            }
-        })
+    private fun processOneKeyComment() {
+
         val dialog = ProgressDialog.show(this@MainActivity, "一键评价", "一键评价进行中...")
-        networkManager.get(NetworkUrlUtils.ONE_KEY_COMMENT, params, object : TextHttpResponseHandler() {
-            override fun onFailure(i: Int, headers: Array<Header>, s: String, throwable: Throwable) {
-
-            }
-
-            override fun onSuccess(i: Int, headers: Array<Header>, s: String) {
+        val oneKeyComment = thesisService.processOnekeyComment(
+                userInfo?.openAppId.toString())
+        oneKeyComment.enqueue(object : Callback<String> {
+            override fun onResponse(call: Call<String>?, response: Response<String>?) {
                 dialog.dismiss()
                 Toast.makeText(this@MainActivity, "一键评价成功!", Toast.LENGTH_LONG).show()
             }
+
+            override fun onFailure(call: Call<String>?, t: Throwable?) {
+
+            }
+
         })
     }
 
@@ -580,36 +481,54 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun logout() {
-        val httpClient = AsyncHttpClient()
-        val params = object : RequestParams() {
-            init {
-                put(NetworkUrlUtils.RQ_K_OPENID, userInfo!!.openAppId)
-            }
-        }
-        httpClient.get(NetworkUrlUtils.LOGOUT, params, object : TextHttpResponseHandler() {
-            override fun onFailure(i: Int, headers: Array<Header>, s: String, throwable: Throwable) {
-
-            }
-
-            override fun onSuccess(i: Int, headers: Array<Header>, s: String) {
+        val logout = thesisService.doLogout(userInfo!!.openAppId.toString())
+        logout.enqueue(object : Callback<String> {
+            override fun onResponse(call: Call<String>?, response: Response<String>?) {
                 val intent = Intent()
                 intent.setClass(this@MainActivity, LoginActivity::class.java)
                 //设置数据库中登录状态为登出
-                sqLiteOperation?.updateLoginStatus(NetworkThreads.loginInfo.number, "0")
+                sqLiteOperation?.updateLoginStatus(
+                        NetworkThreads.loginInfo?.number.toString(), "0")
                 startActivity(intent)
                 finish()
             }
+
+            override fun onFailure(call: Call<String>?, t: Throwable?) {
+
+            }
+
         })
     }
 
-    //后台获取头像照片的任务
-    private inner class AvatarGetTask(private val mNumber: String, private val mCookie: String) : AsyncTask<Void, Void, Bitmap>() {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == SETTING_REQUEST_CODE) {//设置
+            //如果要求（删除用户后）登出：
+            if (resultCode == Activity.RESULT_OK && data.getStringExtra("action") == "logout") {
+                logout()
+            } else if (resultCode == Activity.RESULT_OK && data.getStringExtra("action") == "refreshAvator") {
+                //获取头像图片
+                if (sqLiteOperation?.queryIsShowAvator(userInfo!!.number.toString())!!)
+                    loadAvatar( userInfo!!.cookie.toString())
+                else
+                    toxiang?.setMaskBitmap(BitmapFactory.decodeResource(resources, R.drawable.avatar),
+                            BitmapFactory.decodeResource(resources, R.drawable.mask))
+            }
+        } else if (requestCode == CUSTOM_QUERY_REQUEST_CODE) {//自定义查询成绩
+            if (resultCode == Activity.RESULT_OK) {
+                supportActionBar!!.setTitle("成绩单")
+                Log.i("Grade", "学年：" + data.getStringExtra("xn") + "  " + data.getStringExtra("xq"))
+                //resultWebview.loadUrl("file:///android_asset/wait_page.html");
+                progressDialog = ProgressDialog.show(this@MainActivity, "成绩单", "查询中... ...")
+                Thread(threads!!.QueryGradeThread(data.getStringExtra("xn"), data.getStringExtra("xq"), sqLiteOperation!!)).start()
+            }
+        }
+    }
 
-        override fun doInBackground(vararg params: Void): Bitmap {
+    private fun loadAvatar(cookie:String) {
+        Observable.create<Bitmap> { subscriber ->
             val netManager = HttpClients.createDefault()
             var retImage: Bitmap? = null
-            //            HttpGetHC4 gradeQueryGetRequest = new HttpGetHC4(NetworkUrlUtils.AVATOR_URL + "?number=" + mNumber +
-            //                    "&cookie=" + mCookie);
             /*
              *   2015-10-16 从服务端获取头像改为直接从网站获取头像
              */
@@ -618,7 +537,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             gradeQueryGetRequest.setHeader("Connection", "Keep-Alive")
             gradeQueryGetRequest.setHeader("User-Agent",
                     "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.152 Safari/537.36")
-            gradeQueryGetRequest.setHeader("Cookie", mCookie)
+            gradeQueryGetRequest.setHeader("Cookie", cookie)
             gradeQueryGetRequest.setHeader("Upgrade-Insecure-Requests", "1")
             gradeQueryGetRequest.setHeader("Accept-Encoding", "gzip, deflate, sdch")
 
@@ -636,46 +555,16 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             retImage = BitmapFactory.decodeByteArray(result, 0, result.size)
             retImage = ImageUtils.ImageCrop(retImage)
             retImage = ImageUtils.scaleImage(retImage, 72, 72)
-            return retImage
-        }
-
-        override fun onPostExecute(bitmap: Bitmap?) {
-            super.onPostExecute(bitmap)
-            if (bitmap == null) {
-                return
+            subscriber.onNext(retImage)
+        }.subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { bitmap ->
+                if (bitmap != null) {
+                    //获取到头像后设置头像到界面
+                    toxiang?.setMaskBitmap(bitmap, BitmapFactory
+                            .decodeResource(resources, R.drawable.mask))
+                }
             }
-            //获取到头像后设置头像到界面
-            toxiang?.setMaskBitmap(bitmap, BitmapFactory.decodeResource(resources, R.drawable.mask))
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == SETTING_REQUEST_CODE) {//设置
-            //如果要求（删除用户后）登出：
-            if (resultCode == Activity.RESULT_OK && data.getStringExtra("action") == "logout") {
-                //                Intent intent = new Intent();
-                //                intent.setClass(MainActivity.this, LoginActivity.class);
-                //                startActivity(intent);
-                //                finish();
-                logout()
-            } else if (resultCode == Activity.RESULT_OK && data.getStringExtra("action") == "refreshAvator") {
-                //获取头像图片
-                if (sqLiteOperation?.queryIsShowAvator(userInfo!!.number)!!)
-                    AvatarGetTask(userInfo!!.number, userInfo!!.cookie).execute(null as Void)
-                else
-                    toxiang?.setMaskBitmap(BitmapFactory.decodeResource(resources, R.drawable.avatar),
-                            BitmapFactory.decodeResource(resources, R.drawable.mask))
-            }
-        } else if (requestCode == CUSTOM_QUERY_REQUEST_CODE) {//自定义查询成绩
-            if (resultCode == Activity.RESULT_OK) {
-                supportActionBar!!.setTitle("成绩单")
-                Log.i("Grade", "学年：" + data.getStringExtra("xn") + "  " + data.getStringExtra("xq"))
-                //resultWebview.loadUrl("file:///android_asset/wait_page.html");
-                progressDialog = ProgressDialog.show(this@MainActivity, "成绩单", "查询中... ...")
-                Thread(threads!!.QueryGradeThread(data.getStringExtra("xn"), data.getStringExtra("xq"), sqLiteOperation)).start()
-            }
-        }
     }
 
     /**

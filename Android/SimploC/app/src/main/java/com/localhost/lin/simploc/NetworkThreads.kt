@@ -2,21 +2,16 @@ package com.localhost.lin.simploc
 
 import android.os.Bundle
 import android.os.Handler
-import android.os.Message
 import android.util.Log
-
 import com.localhost.lin.simploc.Entity.LoginInfo
 import com.localhost.lin.simploc.SQLite.SQLiteOperation
 import com.localhost.lin.simploc.Utils.JsonUtils
 import com.localhost.lin.simploc.Utils.NetworkUrlUtils
-
 import org.apache.http.client.methods.HttpGetHC4
-import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtilsHC4
-
 import java.io.IOException
-import java.util.HashMap
+import java.util.*
 
 /**
  * Created by Lin on 2015/11/5.
@@ -95,40 +90,6 @@ class NetworkThreads internal constructor(private var mHandler: Handler?) {
         }
     }
 
-    //    public class TryLoginThread implements Runnable{
-    //        private String num = null,passwd = null,checkC;
-    //        public TryLoginThread(String number,String password,String checkCode){
-    //            num = number;
-    //            passwd = password;
-    //            checkC = checkCode;
-    //        }
-    //        @Override
-    //        public void run() {
-    //            CloseableHttpClient  netManager = HttpClients.createDefault();
-    //            HttpGetHC4 tryLoginGetRequest = new HttpGetHC4(TRY_LOGIN_URL + "?number=" + num +
-    //                                                        "&password=" + passwd + "&checkCode="
-    //                                                        + checkC + "&viewState=" + loginInfo.getViewState()
-    //                                                        + "&cookie=" + loginInfo.getCookie());
-    //            String result = null;
-    //            loginInfo.setCheckCode(checkC);
-    //            loginInfo.setNumber(num);
-    //            loginInfo.setPassword(passwd);
-    //            try {
-    //                result = EntityUtilsHC4.toString(netManager.execute(tryLoginGetRequest).getEntity());
-    //            } catch (IOException e) {
-    //                e.printStackTrace();
-    //            }
-    //
-    //            Bundle bundle = new Bundle();
-    //            bundle.putString("canLogin",result);
-    //
-    //            Message msg = mHandler.obtainMessage();
-    //            msg.obj = "tryLoginEnd";
-    //            msg.setData(bundle);
-    //            mHandler.sendMessage(msg);
-    //        }
-    //    }
-
     inner class QueryGradeThread(xnString: String, xqString: String, private val mSqLiteOperation: SQLiteOperation) : Runnable {
         private var xnStr: String? = null
         private var xqStr: String? = null
@@ -141,10 +102,10 @@ class NetworkThreads internal constructor(private var mHandler: Handler?) {
         override fun run() {
             val netManager = HttpClients.createDefault()
             Log.d("Network:cookie--", NetworkThreads.loginInfo!!.cookie)
-            val loginMsg = mSqLiteOperation.find(loginInfo!!.number)
-            val gradeQueryGetRequest = HttpGetHC4(QUERY_URL + "?number=" + loginMsg[1] +
-                    "&cookie=" + loginMsg[3] + "&xn=" + xnStr + "&xq=" + xqStr
-                    + "&xm=" + loginMsg[4] + "&openUserId=" + loginMsg[8])
+            val loginMsg = mSqLiteOperation.find(loginInfo!!.number.toString())
+            val gradeQueryGetRequest = HttpGetHC4(QUERY_URL + "?number=" + loginMsg?.get(1) +
+                    "&cookie=" + loginMsg?.get(3) + "&xn=" + xnStr + "&xq=" + xqStr
+                    + "&xm=" + loginMsg?.get(4) + "&openUserId=" + loginMsg?.get(8))
             var result: String? = null
             //HashMap<String,String> gradeList = new HashMap<String,String>();
             try {

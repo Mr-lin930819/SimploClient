@@ -2,46 +2,27 @@ package com.localhost.lin.simploc
 
 import android.app.ProgressDialog
 import android.content.Intent
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
 import android.util.Log
-import android.view.View
 import android.widget.Button
 import android.widget.EditText
-import android.widget.ImageView
 import android.widget.Toast
-
 import com.localhost.lin.simploc.Entity.UserEntity
 import com.localhost.lin.simploc.SQLite.SQLiteOperation
 import com.localhost.lin.simploc.Utils.JsonUtils
-import com.localhost.lin.simploc.Utils.NetworkUrlUtils
 import com.localhost.lin.simploc.query_interface.ThesisApi
-import com.loopj.android.http.AsyncHttpClient
-import com.loopj.android.http.RequestParams
-import com.loopj.android.http.TextHttpResponseHandler
-
-import org.apache.http.client.methods.HttpGetHC4
-import org.apache.http.impl.client.CloseableHttpClient
-import org.apache.http.impl.client.HttpClients
-import org.apache.http.util.EntityUtilsHC4
+import kotlinx.android.synthetic.main.content_session_verify.*
 import org.json.JSONException
 import org.json.JSONObject
-
-import java.io.IOException
-import java.text.SimpleDateFormat
-import java.util.HashMap
-import java.util.Locale
-
-import cz.msebera.android.httpclient.Header
-import kotlinx.android.synthetic.main.content_session_verify.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.text.SimpleDateFormat
+import java.util.*
 
 class SessionVerifyActivity : AppCompatActivity() {
 
@@ -56,7 +37,7 @@ class SessionVerifyActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         //先进行验证，身份过期了再进行接下去的操作，否则跳转到主界面
         sqLiteOperation = SQLiteOperation(this)
-        userInfo = sqLiteOperation!!.findUser(sqLiteOperation!!.findLoginUser())
+        userInfo = sqLiteOperation!!.findUser(sqLiteOperation!!.findLoginUser().toString())
         setContentView(R.layout.activity_session_verify)
 
         val toolbar = findViewById(R.id.toolbar) as Toolbar?
@@ -65,25 +46,15 @@ class SessionVerifyActivity : AppCompatActivity() {
         val confirmBtn = findViewById(R.id.re_login_btn) as Button?
         confirmBtn!!.setOnClickListener {
             val procBox = AlertDialog.Builder(this@SessionVerifyActivity).setTitle("重新登录").setMessage("正在重新登录...").show()
-            val reloginClient = AsyncHttpClient()
-            reloginClient.get(NetworkUrlUtils.RE_LOGIN, RequestParams(object : HashMap<String, String>() {
-                init {
-                    put(NetworkUrlUtils.RQ_K_OPENID, userInfo!!.openAppId)
-                    put("viewState", mViewState)
-                    put("cookie", mCookie)
-                    put("checkCode", checkInput!!.text.toString())
-                }
-            }), object : TextHttpResponseHandler() {
-                override fun onFailure(i: Int, headers: Array<Header>, s: String, throwable: Throwable) {
-                    procBox.dismiss()
-                    processNetErr()
-                }
-
-                override fun onSuccess(i: Int, headers: Array<Header>, s: String) {
+            val reloginClient = thesisService.doReLogin(userInfo!!.openAppId.toString(),
+                    mViewState, mCookie, checkInput!!.text.toString())
+            reloginClient.enqueue(object : Callback<String> {
+                override fun onResponse(call: Call<String>?, response: Response<String>?) {
                     val rsJson: JSONObject
                     var rstText = ""
                     try {
-                        rsJson = JSONObject(s).getJSONObject("reLoginRst")
+                        rsJson = JSONObject(response?.body().toString())
+                                .getJSONObject("reLoginRst")
                         rstText = rsJson.get("result").toString()
                     } catch (e: JSONException) {
                         e.printStackTrace()
@@ -99,36 +70,34 @@ class SessionVerifyActivity : AppCompatActivity() {
                         processNetErr()
                     }
                 }
+
+                override fun onFailure(call: Call<String>?, t: Throwable?) {
+                    procBox.dismiss()
+                    processNetErr()
+                }
+
             })
         }
 
-        verifySession(userInfo!!.openAppId)
+        verifySession(userInfo!!.openAppId.toString())
     }
 
     private fun verifySession(openID: String) {
         val verifyDialog = ProgressDialog.show(this@SessionVerifyActivity,
                 "登录验证", "正在验证用户信息")
-        val client = AsyncHttpClient()
-        client.get(NetworkUrlUtils.SESSION_VERIFY, RequestParams(object : HashMap<String, String>() {
-            init {
-                put(NetworkUrlUtils.RQ_K_OPENID, openID)
-            }
-        }), object : TextHttpResponseHandler() {
-            override fun onStart() {
-                charset = "gb2312"
-                super.onStart()
-            }
-
-            override fun onFailure(i: Int, headers: Array<Header>, s: String, throwable: Throwable) {
+        val verifyClient = thesisService.verifySession(openID)
+        verifyClient.enqueue(object : Callback<String> {
+            override fun onFailure(call: Call<String>?, t: Throwable?) {
                 processNetErr()
                 verifyDialog.dismiss()
             }
 
-            override fun onSuccess(i: Int, headers: Array<Header>, s: String) {
+            override fun onResponse(call: Call<String>?, response: Response<String>?) {
                 val rsJson: JSONObject
                 var rstText = ""
                 try {
-                    rsJson = JSONObject(s).getJSONObject("verifyRst")
+                    rsJson = JSONObject(response?.body().toString())
+                            .getJSONObject("verifyRst")
                     rstText = rsJson.get("result").toString()
                 } catch (e: JSONException) {
                     e.printStackTrace()
@@ -142,11 +111,12 @@ class SessionVerifyActivity : AppCompatActivity() {
                 }
                 verifyDialog.dismiss()
             }
+
         })
     }
 
     private fun processSuccess() {
-        sqLiteOperation!!.updateLoginInfo(userInfo!!.number,
+        sqLiteOperation!!.updateLoginInfo(userInfo!!.number.toString(),
                 SimpleDateFormat("yyyy-MM-dd", Locale.US).format(java.util.Date()), mCookie)
         val intent = Intent()
         intent.setClass(this@SessionVerifyActivity, MainActivity::class.java)
@@ -182,7 +152,8 @@ class SessionVerifyActivity : AppCompatActivity() {
                 val checkImgCall = thesisService.getCheckImg(tmpData["cookie"].toString())
                 checkImgCall.enqueue(object : Callback<String> {
                     override fun onFailure(call: Call<String>?, t: Throwable?) {
-                        Toast.makeText(this@SessionVerifyActivity, "获取登录信息失败!", Toast.LENGTH_LONG)
+                        Toast.makeText(this@SessionVerifyActivity,
+                                "获取登录信息失败!", Toast.LENGTH_LONG).show()
                     }
 
                     override fun onResponse(call: Call<String>?, response: Response<String>?) {
@@ -200,7 +171,8 @@ class SessionVerifyActivity : AppCompatActivity() {
             }
 
             override fun onFailure(call: Call<String>, t: Throwable) {
-                Toast.makeText(this@SessionVerifyActivity, "验证码获取失败!", Toast.LENGTH_LONG)
+                Toast.makeText(this@SessionVerifyActivity,
+                        "验证码获取失败!", Toast.LENGTH_LONG).show()
             }
         })
     }
