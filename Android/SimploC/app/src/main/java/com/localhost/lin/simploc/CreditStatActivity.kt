@@ -62,7 +62,7 @@ class CreditStatActivity : AppCompatActivity(), GPAFragment.OnFragmentInteractio
     }
 
     internal fun loadData() {
-        val user = mSqLiteOperation!!.findUser(NetworkThreads.loginInfo.number)
+        val user = mSqLiteOperation!!.findUser(NetworkThreads.loginInfo?.number)
         val creditClient = AsyncHttpClient()
         val processDialog = ProgressDialog.show(this@CreditStatActivity, "学分绩点统计", "查询中...")
         creditClient.get(NetworkThreads.QUERY_URL, RequestParams(object : HashMap<String, String>() {
