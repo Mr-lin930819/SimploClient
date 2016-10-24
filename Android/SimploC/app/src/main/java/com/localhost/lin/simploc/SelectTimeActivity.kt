@@ -64,9 +64,9 @@ class SelectTimeActivity : AppCompatActivity() {
     private fun loadOption() {
 //        val httpClient = AsyncHttpClient()
         val dialog = ProgressDialog.show(this, "获取选项", "获取学年信息中...")
-        val lgMsg = mSqLiteOperation!!.find(NetworkThreads.loginInfo.number)
+        val lgMsg = mSqLiteOperation!!.find(NetworkThreads.loginInfo?.number.toString())
 
-        val optionLoader = thesisService.loadXNIOption(lgMsg[8])
+        val optionLoader = thesisService.loadXNIOption(lgMsg?.get(8).toString())
         optionLoader.enqueue(object : Callback<String>{
             override fun onResponse(call: Call<String>?, response: Response<String>?) {
                 val retData = JsonUtils.convJson2List(response?.body().toString(), "CXTJ")

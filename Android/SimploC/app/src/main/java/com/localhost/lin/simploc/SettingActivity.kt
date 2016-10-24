@@ -24,7 +24,7 @@ class SettingActivity : AppCompatActivity() {
         val deleteUserButton = findViewById(R.id.delete_user_btn) as Button?
         deleteUserButton!!.setOnClickListener {
             val dialog = AlertDialog.Builder(this@SettingActivity).setTitle("删除账号").setMessage("确定删除吗？").setPositiveButton("确定") { dialog, which ->
-                sqLiteOperation!!.delete(NetworkThreads.loginInfo!!.number)
+                sqLiteOperation!!.delete(NetworkThreads.loginInfo!!.number.toString())
                 val intent = Intent()
                 intent.putExtra("action", "logout")
                 setResult(Activity.RESULT_OK, intent)
@@ -34,9 +34,12 @@ class SettingActivity : AppCompatActivity() {
         }
 
         val checkBox = findViewById(R.id.is_show_avator) as CheckBox?
-        val checked = sqLiteOperation!!.queryIsShowAvator(NetworkThreads.loginInfo!!.number)
+        val checked = sqLiteOperation!!.queryIsShowAvator(NetworkThreads.loginInfo!!.number.toString())
         checkBox!!.isChecked = checked
-        checkBox.setOnClickListener(View.OnClickListener { sqLiteOperation!!.updateIsShowAvator(NetworkThreads.loginInfo!!.number, checkBox.isChecked) })
+        checkBox.setOnClickListener(View.OnClickListener {
+            sqLiteOperation!!.updateIsShowAvator(
+                    NetworkThreads.loginInfo!!.number.toString(), checkBox.isChecked)
+        })
     }
 
     override fun onBackPressed() {

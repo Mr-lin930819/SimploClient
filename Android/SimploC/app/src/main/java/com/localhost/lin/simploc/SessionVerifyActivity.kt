@@ -31,7 +31,7 @@ class SessionVerifyActivity : AppCompatActivity() {
     private var mViewState = ""
     private var mCookie = ""
     internal var checkInput: EditText? = null
-    val thesisService = CustomApplication.getInstance().retrofit.create(ThesisApi::class.java)
+    val thesisService:ThesisApi = CustomApplication.getInstance().retrofit.create(ThesisApi::class.java)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -96,6 +96,7 @@ class SessionVerifyActivity : AppCompatActivity() {
                 val rsJson: JSONObject
                 var rstText = ""
                 try {
+                    Log.i("TAG", response?.body().toString())
                     rsJson = JSONObject(response?.body().toString())
                             .getJSONObject("verifyRst")
                     rstText = rsJson.get("result").toString()

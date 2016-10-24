@@ -91,7 +91,7 @@ class LoginActivity : AppCompatActivity() {
         }
 
         override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-            var info: Array<String>? = null
+            val info: Array<String?>?
             if (s.length == 12) {
                 info = sqLiteOperation?.find(s.toString())
                 if (info != null) {
@@ -178,7 +178,7 @@ class LoginActivity : AppCompatActivity() {
             // perform the user login attempt.
             showProgress(true)
             mAuthTask = UserLoginTask(userNumber, password, checkCode)
-            mAuthTask!!.execute(null as Void)
+            mAuthTask!!.execute(null)
         }
     }
 
@@ -255,7 +255,7 @@ class LoginActivity : AppCompatActivity() {
                     Thread(threads?.RecvLoginPageThread()).start()
                     //重试次数大于5，退出程序
                     if (++retryCount > 5) {
-                        Toast.makeText(this@LoginActivity, "网络连接错误", Toast.LENGTH_LONG)
+                        Toast.makeText(this@LoginActivity, "网络连接错误", Toast.LENGTH_LONG).show()
                         this@LoginActivity.finish()
                     }
                 }
