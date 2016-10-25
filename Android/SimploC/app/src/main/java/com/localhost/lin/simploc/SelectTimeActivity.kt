@@ -70,7 +70,7 @@ class SelectTimeActivity : AppCompatActivity() {
         optionLoader.enqueue(object : Callback<String>{
             override fun onResponse(call: Call<String>?, response: Response<String>?) {
                 val retData = JsonUtils.convJson2List(response?.body().toString(), "CXTJ")
-                Log.d("convert", retData!![0])
+                Log.d("convert", retData[0])
                 val xnAdapter = ArrayAdapter(this@SelectTimeActivity,
                         android.R.layout.simple_spinner_item, retData)
                 xnAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)

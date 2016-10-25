@@ -106,6 +106,7 @@ class CourseTableFragment : Fragment() {
         val rawData = ArrayList<String>()
         val lessonNumber = arrayOf("第1节", "第3节", "第5节", "第7节", "第9节", "第11节")
         val maxlesson = JsonUtils.numOfNode(jsonContent)
+        Log.i("TAG", jsonContent)
         for (i in 0..maxlesson - 1) {
             rawData.addAll(JsonUtils.convJson2List(jsonContent, lessonNumber[i]))   //从json数据中获取节数相关的一周所有课程
         }

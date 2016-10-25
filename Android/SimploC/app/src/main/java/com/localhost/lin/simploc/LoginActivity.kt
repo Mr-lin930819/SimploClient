@@ -285,7 +285,7 @@ class LoginActivity : AppCompatActivity() {
             NetworkThreads.loginInfo!!.number = mNumber
             NetworkThreads.loginInfo!!.password = mPassword
             try {
-                result = EntityUtilsHC4.toString(netManager.execute(tryLoginGetRequest).entity, "gb2312")
+                result = EntityUtilsHC4.toString(netManager.execute(tryLoginGetRequest).entity, "utf-8")
             } catch (e: IOException) {
                 e.printStackTrace()
             }

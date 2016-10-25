@@ -8,7 +8,7 @@ public class NetworkUrlUtils {
     //public static final String HOST_URL             = "http://www.pockitcampus.com/SimploServer/";
 //    public static final String HOST_URL             ="http://120.27.33.113:8080/SimploServer/";
 //    public static final String TEST_HOST_URL        = "http://192.168.1.102:8080/SimploServer/";
-    public static final String HOST_URL             = "http://172.20.46.23:8080/SimploServer/";
+    public static final String HOST_URL             = "http://172.21.100.183:8000";
 //    public static final String HOST_URL             = "http://120.27.33.113:8080/SimploServer/";
     public static final String LOGIN_URL            = HOST_URL + "/LoginPageServlet";
     public static final String TRY_LOGIN_URL        = HOST_URL + "/TryLoginServlet";

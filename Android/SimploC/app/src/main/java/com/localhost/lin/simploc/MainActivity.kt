@@ -407,6 +407,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
 
             override fun onResponse(call: Call<String>?, response: Response<String>?) {
+                dialog.dismiss()
                 if (response?.body() == "CODE2") {//需要进行一键评价
                     AlertDialog.Builder(this@MainActivity).setTitle("一键评价")
                             .setMessage("需要进行一键评价才能继续，确定进行一键评价吗？")
