@@ -49,7 +49,7 @@ class NetworkThreads internal constructor(private var mHandler: Handler?) {
                 tmpData = JsonUtils.convJson2Map(loginPage, "loginPage")
                 if (tmpData == null) {
                     msg.obj = "runError"
-                    loginBundle.putString("info", "ThesisApi")
+                    loginBundle.putString("info", "LoginPage")
                     msg.data = loginBundle
                     try {
                         Thread.sleep(2500)
