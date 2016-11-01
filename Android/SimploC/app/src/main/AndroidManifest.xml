@@ -35,7 +35,11 @@
             android:name=".SessionVerifyActivity"
             android:label="@string/title_activity_session_verify"
             android:theme="@style/BlueAppTheme.NoActionBar" />
-        <activity android:name=".CreditStatActivity"></activity>
+        <activity android:name=".CreditStatActivity" />
+        <activity
+            android:name=".MainReactActivity"
+            android:label="@string/title_activity_main_react"
+            android:theme="@style/BlueAppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>
