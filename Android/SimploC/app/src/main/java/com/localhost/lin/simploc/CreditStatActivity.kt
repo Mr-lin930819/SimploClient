@@ -9,7 +9,6 @@ import android.support.v4.view.PagerAdapter
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.MenuItem
-import android.view.View
 import android.widget.Toast
 import com.localhost.lin.simploc.Fragments.CreditFragment
 import com.localhost.lin.simploc.Fragments.GPAFragment
@@ -150,8 +149,8 @@ class CreditStatActivity : AppCompatActivity(), GPAFragment.OnFragmentInteractio
         mPagerViews.add(creditFragment)
         mPagerViews.add(optCreditFragment)
         view_pager_credit.adapter = mPagerAdapter
-        indicator_credit.visibility = View.VISIBLE
-        indicator_credit.setViewPager(view_pager_credit)
+        //indicator_credit.visibility = View.VISIBLE
+        //indicator_credit.setViewPager(view_pager_credit)
     }
 
 

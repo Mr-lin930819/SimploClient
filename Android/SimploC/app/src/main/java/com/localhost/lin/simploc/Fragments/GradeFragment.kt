@@ -9,7 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.localhost.lin.simploc.R
-import com.viewpagerindicator.TabPageIndicator
+//import com.viewpagerindicator.TabPageIndicator
 import java.util.*
 
 /**
@@ -52,7 +52,7 @@ class GradeFragment : Fragment() {
         val gradeChartTab = GradeChartTab.newInstance(0)
         val gradeListTab = GradeListTab()
         val viewPager = rootView.findViewById(R.id.grade_pager) as ViewPager
-        val tabPageIndicator = rootView.findViewById(R.id.tab_indicator) as TabPageIndicator
+//        val tabPageIndicator = rootView.findViewById(R.id.tab_indicator) as TabPageIndicator
         val bundle = Bundle()
         bundle.putString("jsonResult", mGradeJsonData)
         gradeChartTab.arguments = bundle
@@ -62,7 +62,7 @@ class GradeFragment : Fragment() {
         mFragments.add(gradeListTab)
         viewPager.adapter = mPagerAdapter
         //        tabPageIndicator.setVisibility(View.VISIBLE);
-        tabPageIndicator.setViewPager(viewPager, 0)
+//        tabPageIndicator.setViewPager(viewPager, 0)
         return rootView
     }
 

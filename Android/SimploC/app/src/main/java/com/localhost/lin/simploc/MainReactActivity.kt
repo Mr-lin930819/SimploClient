@@ -2,7 +2,6 @@ package com.localhost.lin.simploc
 
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.Toolbar
 import com.facebook.react.LifecycleState
 import com.facebook.react.ReactInstanceManager
 import com.facebook.react.ReactRootView
@@ -19,8 +18,8 @@ class MainReactActivity : AppCompatActivity(), DefaultHardwareBackBtnHandler {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val toolbar = findViewById(R.id.toolbar) as Toolbar?
-        setSupportActionBar(toolbar)
+//        val toolbar = findViewById(R.id.toolbar) as Toolbar?
+//        setSupportActionBar(toolbar)
         val mReactRootView = ReactRootView(this)
         mReactInstanceManager = ReactInstanceManager.builder()
                 .setApplication(application)
